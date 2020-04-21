@@ -16,7 +16,7 @@ dst = cv2.filter2D(img, -1, kernel)
 median = cv2.medianBlur(img, 25)
 new = img - median
 
-lap = apply_filters.apply_laplacian(img)
+lap = apply_laplacian.apply_laplacian(img)
 
 plt.subplot(241), plt.imshow(img), plt.title('Original')
 plt.xticks([]), plt.yticks([])
