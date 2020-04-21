@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import numpy as np
+import utils
 
 # from apply_filters import apply_laplacian
 
@@ -34,13 +35,6 @@ dst = cv2.filter2D(img, -1, kernel)
 median = cv2.medianBlur(img, 25)
 new = img - median
 
-hist, bins = np.histogram(img.flatten(), 256,[0, 256])
-cdf = hist.cumsum()
-cdf_normalized = cdf * hist.max() / cdf.max()
-lap = apply_laplacian(img)
-cdf_m = np.ma.masked_equal(cdf,0)
-cdf_m = (cdf_m - cdf_m.min())*255/(cdf_m.max()-cdf_m.min())
-cdf = np.ma.filled(cdf_m, 0).astype('uint8')
 img2 = cdf[img]
 
 # print(lap, np.max(lap))
