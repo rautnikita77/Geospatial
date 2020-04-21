@@ -15,5 +15,3 @@ def apply_laplacian(src):
     print(abs_dst)
     cv2.imshow('abc', abs_dst)
     cv2.waitKey(0)
-
-    return abs_dst
