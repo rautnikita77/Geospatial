@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def hist_eq(img):
@@ -19,3 +20,22 @@ def apply_laplacian(src):
     dst = cv2.Laplacian(src_gray, ddepth, ksize=3)
     abs_dst = cv2.convertScaleAbs(dst)
     return abs_dst
+
+
+def subplot_img(imgs, title='Subplots'):
+    fig, axes = plt.subplots(len(imgs))
+    for x in range(len(imgs)):
+        axes[x].imshow(imgs[x])
+    plt.show()
+
+
+def plot_cam2_bounding_box(img):
+    cv2.rectangle(img, (1180, 780), (1300, 900), (255, 0, 0), 10)
+    plt.imshow(img)
+    plt.show()
+
+
+def apply_thresholding_img(img, t1, t2):
+    hist_threshold = np.where(img > 150, img, 0)
+    hist_threshold = np.where(hist_threshold < 230, 0, 255)
+    return hist_threshold
