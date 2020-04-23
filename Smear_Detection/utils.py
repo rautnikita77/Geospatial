@@ -29,13 +29,25 @@ def subplot_img(imgs, title='Subplots'):
     plt.show()
 
 
-def plot_cam2_bounding_box(img):
-    cv2.rectangle(img, (1180, 780), (1300, 900), (255, 0, 0), 10)
-    plt.imshow(img)
+def gaussian_blur(img, size):
+    kernel = np.ones((size, size), np.float32) / (size**2)
+    dst = cv2.filter2D(img, -1, kernel)
+    return dst
+
+
+def plot_cam2_bounding_box(img, camera=2, title_=''):
+    if camera == 2:
+        cv2.rectangle(img, (1180, 780), (1300, 900), (122, 0, 0), 10)
+    if camera == 3:
+        cv2.rectangle(img, (1760, 1420), (1950, 1600), (122, 0, 0), 10)
+    plt.imshow(img, cmap='gray')
+    # plt.imshow(img[1180:1300, 780:900], cmap='gray')
+    plt.title(title_)
     plt.show()
+    # print(img[1180:1300, 780:900])
 
 
 def apply_thresholding_img(img, t1, t2):
-    hist_threshold = np.where(img > 150, img, 0)
-    hist_threshold = np.where(hist_threshold < 230, 0, 255)
+    hist_threshold = np.where(img >= t1, img, 255)
+    hist_threshold = np.where(hist_threshold < t2, 0, hist_threshold)
     return hist_threshold
