@@ -41,9 +41,8 @@ def subplot_img(imgs, title='Subplots'):
 
 
 def gaussian_blur(img, size, iterations=1):
-    kernel = np.ones((size, size), np.float32) / (size**2)
     for x in range(iterations):
-        img = cv2.filter2D(img, -1, kernel)
+        img = cv2.GaussianBlur(img, (size, size), 0)
     return img
 
 
