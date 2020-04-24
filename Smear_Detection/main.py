@@ -1,12 +1,12 @@
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
-from utils import apply_laplacian, hist_eq, subplot_img, plot_cam2_bounding_box, apply_thresholding_img
+from utils import hist_eq, plot_cam2_bounding_box, gaussian_blur, dilate
 import os
 from tqdm import tqdm
 
-
-data_path = '/Users/anupamtripathi/PycharmProjects/Geospatial/Smear_Detection/data/sample_drive/cam_3'
+camera = 3
+data_path = '/Users/anupamtripathi/PycharmProjects/Geospatial/Smear_Detection/data/sample_drive/cam_' + str(camera)
 
 
 def create_smear_mask(img):
@@ -24,43 +24,24 @@ def create_smear_mask(img):
 
 
 if __name__ == "__main__":
-    masks = []
-    sum_ = 0
+    mean = []
     for n, img in tqdm(enumerate(os.listdir(data_path))):
-        image = cv2.imread(os.path.join(data_path, img))
-        # image = cv2.imread('/Users/anupamtripathi/PycharmProjects/Geospatial/Smear_Detection/data/sample_drive/cam_2/393412416.jpg')
-        mask = create_smear_mask(image)
-        if isinstance(sum_, int):
-            sum_ = mask
-        else:
-            sum_ += mask
-        # masks.append(mask)
-        # print(np.unique(mask))
-        # plt.imshow(mask)
-        # plt.show()
-        # # break
-        # subplot_img([image, mask])
-        # plot_cam2_bounding_box(mask.astype(np.float32))
-        # if n == 50:
-        #     break
-        # break
-        if n == 3:
-            break
+        image = cv2.imread(os.path.join(data_path, img), cv2.IMREAD_GRAYSCALE)
+        img_hist = hist_eq(image)
+        img_gauss = gaussian_blur(img_hist, 10)
+        mean.append(img_gauss)
 
-    # plt.imshow(sum_)
-    # plt.title('Sum')
-    # # plt.imshow(sum_)
-    # plt.show()
-    # temp = sum_ - 120000
-    # temp = temp / np.max(temp)
-    temp = sum_
-    temp = sum_ - np.max(temp) + 1000
-    temp = temp / np.max(temp)
-    plot_cam2_bounding_box(sum_)
-    plot_cam2_bounding_box(temp * 255)
-
-    #
-    # masks = np.array(masks)
-    # masks_mean = np.mean(masks, axis=0)
-    # plt.imshow(masks_mean)
-    # plt.show()
+    mean = np.array(mean)
+    mean = np.mean(mean, axis=0)
+    print(mean.dtype)
+    cv2.imwrite('test3.jpg', mean)
+    mean = cv2.imread('test3.jpg')
+    plot_cam2_bounding_box(mean, camera, 'Mean camera ' + str(camera))
+    kernel = np.ones((3, 3), np.uint8)
+    bg = cv2.dilate(mean, kernel, iterations=1)
+    plot_cam2_bounding_box(mean - bg, camera, 'BG ' + str(camera))
+    mask = mean - bg
+    print(mask.dtype, np.max(mask))
+    for iterations in range(2):
+        mask = cv2.medianBlur(mask, 101)
+    plot_cam2_bounding_box(mask, camera, 'Mask camera ' + str(camera))
