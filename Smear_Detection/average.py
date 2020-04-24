@@ -34,7 +34,7 @@ def load_images_from_folder(folder):
 
 
 def avg(img, cam):
-    me =  np.mean(img, axis=0)
+    me = np.mean(img, axis=0)
     cv2.imwrite(cam + "mean.png", me)
     ret, thresh1 = cv2.threshold(me, 80, 255, cv2.THRESH_BINARY)
     thresh1 = (255 - thresh1).astype(np.uint8)
