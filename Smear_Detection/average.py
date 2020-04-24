@@ -15,5 +15,6 @@ def load_images_from_folder(folder):
 def main():
     load_images_from_folder(os.path.join('data', 'sample_drive'))
 
+
 if __name__ == "__main__":
     main()

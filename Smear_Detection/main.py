@@ -1,7 +1,7 @@
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
-from utils import hist_eq, plot_cam2_bounding_box, gaussian_blur, dilate
+from utils import hist_eq, plot_cam2_bounding_box, gaussian_blur, dilate, median_blur
 import os
 from tqdm import tqdm
 
@@ -33,15 +33,18 @@ if __name__ == "__main__":
 
     mean = np.array(mean)
     mean = np.mean(mean, axis=0)
-    print(mean.dtype)
+    print(mean.dtype, mean.shape, np.max(mean))
     cv2.imwrite('test3.jpg', mean)
     mean = cv2.imread('test3.jpg')
+    print(mean.dtype, mean.shape, np.max(mean))
     plot_cam2_bounding_box(mean, camera, 'Mean camera ' + str(camera))
-    kernel = np.ones((3, 3), np.uint8)
-    bg = cv2.dilate(mean, kernel, iterations=1)
+    bg = dilate(mean, 3, iterations=1)
+    # kernel = np.ones((3, 3), np.uint8)
+    # bg = cv2.dilate(mean, kernel, iterations=1)
     plot_cam2_bounding_box(mean - bg, camera, 'BG ' + str(camera))
     mask = mean - bg
     print(mask.dtype, np.max(mask))
-    for iterations in range(2):
-        mask = cv2.medianBlur(mask, 101)
+    mask = median_blur(mask, 101, 2)
+    # for iterations in range(2):
+    #     mask = cv2.medianBlur(mask, 101)
     plot_cam2_bounding_box(mask, camera, 'Mask camera ' + str(camera))
