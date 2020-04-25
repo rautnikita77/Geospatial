@@ -42,6 +42,6 @@ if __name__ == "__main__":
     plot_cam2_bounding_box(mean - bg, camera, 'BG ' + str(camera))
     mask = mean - bg
     print(mask.dtype, np.max(mask))
-    for iterations in range(2):
+    for iterations in range(1):
         mask = cv2.medianBlur(mask, 101)
     plot_cam2_bounding_box(mask, camera, 'Mask camera ' + str(camera))
