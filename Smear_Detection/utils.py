@@ -46,10 +46,12 @@ def gaussian_blur(img, size, iterations=1):
     return img
 
 
-def plot_cam2_bounding_box(img, camera=2, title_=''):
-    if camera == 2:
+def plot_bounding_box(img, camera=2, title_=''):
+    if camera == 0:
+        cv2.rectangle(img, (850, 620), (1050, 800), (122, 0, 0), 10)
+    elif camera == 2:
         cv2.rectangle(img, (1180, 780), (1300, 900), (122, 0, 0), 10)
-    if camera == 3:
+    elif camera == 3:
         cv2.rectangle(img, (1760, 1420), (1950, 1600), (122, 0, 0), 10)
     plt.imshow(img, cmap='gray')
     plt.title(title_)
