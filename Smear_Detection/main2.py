@@ -48,14 +48,11 @@ def perform(cam, subtract=True):
 
 
     params = cv2.SimpleBlobDetector_Params()
-    #
-    # params.filterByArea = True
-    # params.minArea = 300
-    # params.maxArea = mask.shape[0] * mask.shape[1] / 2
-    # #
-    # params.filterByConvexity = True
-    # params.minConvexity = 0.5
-    # params.maxConvexity = 1
+
+    params.filterByArea = True
+    params.minArea = 300
+    params.maxArea = mask.shape[0] * mask.shape[1] / 2
+
 
     mask = 255 - mask
     detector = cv2.SimpleBlobDetector_create(params)
