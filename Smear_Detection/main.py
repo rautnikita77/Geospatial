@@ -5,13 +5,13 @@ from utils import hist_eq, plot_bounding_box, erode, dilate, median_blur
 import os
 from tqdm import tqdm
 
-camera = 2
-data_path = '/Users/anupamtripathi/PycharmProjects/Geospatial/Smear_Detection/data/new_data/sample_drive/cam_' + str(camera)
+camera = 5
+data_path = 'data/sample_drive/cam_' + str(camera)
 
 
 def detect_smear_camer(camera):
     mean = cv2.imread(os.path.join(data_path, os.listdir(data_path)[0]), cv2.IMREAD_GRAYSCALE)
-    for n, img in tqdm(enumerate(os.listdir(data_path)[1:])):
+    for n, img in enumerate(tqdm(os.listdir(data_path)[1:])):
         image = cv2.imread(os.path.join(data_path, img), cv2.IMREAD_GRAYSCALE)
         equ = cv2.equalizeHist(image)
         mean = (mean * (n + 1) + equ) / (n + 2)
