@@ -5,7 +5,7 @@ from utils import hist_eq, plot_bounding_box, gaussian_blur, dilate, median_blur
 import os
 from tqdm import tqdm
 
-camera = 5
+camera = 2
 data_path = '/Users/anupamtripathi/PycharmProjects/Geospatial/Smear_Detection/data/new_data/sample_drive/cam_' + str(camera)
 
 

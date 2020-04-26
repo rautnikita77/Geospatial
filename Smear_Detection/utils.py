@@ -72,6 +72,12 @@ def dilate(img, size, iterations=1):
     return bg
 
 
+def erode(img, size, iterations=1):
+    kernel = np.ones((size, size), np.uint8)
+    bg = cv2.erode(img, kernel, iterations=iterations)
+    return bg
+
+
 def median_blur(img, size, iterations=1):
     for iterations in range(iterations):
         img = cv2.medianBlur(img, size)

@@ -3,7 +3,7 @@ import os
 import numpy as np
 from tqdm import tqdm
 import math
-from utils import hist_eq, plot_cam2_bounding_box, gaussian_blur, dilate
+from utils import hist_eq, plot_bounding_box, gaussian_blur, dilate
 
 
 
