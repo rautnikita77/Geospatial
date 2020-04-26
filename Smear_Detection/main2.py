@@ -3,7 +3,7 @@ import os
 import numpy as np
 from tqdm import tqdm
 import math
-from utils import hist_eq, gaussian_blur, dilate
+from utils import hist_eq, gaussian_blur, dilate, plot_bounding_box, median_blur, isolate_key_ponits
 
 
 
@@ -36,12 +36,15 @@ def perform(cam, subtract=True):
     for iterations in range(2):
         mask = cv2.medianBlur(mask, 101)
 
-    cv2.imwrite('bg2.png', mask)
-    kernel = np.ones((80, 80), np.uint8)
-    mask1 = cv2.erode(mask, kernel, iterations=1)
-    cv2.imwrite("a.png", mask1)
-    mask = mask - mask1
-    cv2.imwrite("b.png", mask)
+    plot_bounding_box(mask, 4)
+    # kernel = np.ones((50, 50), np.uint8)
+    # mask1 = cv2.erode(mask, kernel, iterations=1)
+    # mask1 = median_blur(mask, 101, 2)
+    # plot_bounding_box(mask1, 4)
+    # cv2.imwrite("a.png", mask1)
+    # mask = mask - mask1
+    # cv2.imwrite("b.png", mask)
+    plot_bounding_box(mask, 4)
 
 
     params = cv2.SimpleBlobDetector_Params()
@@ -58,6 +61,13 @@ def perform(cam, subtract=True):
     detector = cv2.SimpleBlobDetector_create(params)
 
     keypoints = detector.detect(mask)
+
+    print(help(keypoints[0]))
+    print(keypoints[0].convert(keypoints))
+
+    new_mask = isolate_key_ponits(255 - mask, keypoints)
+
+    plot_bounding_box(new_mask, -1)
 
     return keypoints, mask
 

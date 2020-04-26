@@ -82,3 +82,13 @@ def median_blur(img, size, iterations=1):
     for iterations in range(iterations):
         img = cv2.medianBlur(img, size)
     return img
+
+
+def isolate_key_ponits(mask, keypoints):
+    new_mask = np.zeros(mask.shape) * 255
+    for y, x in keypoints[0].convert(keypoints):
+        x = int(x)
+        y = int(y)
+        print(x, y)
+        new_mask[x - 100: x + 100, y - 100: y + 100] = mask[x - 100: x + 100, y - 100: y + 100]
+    return new_mask
