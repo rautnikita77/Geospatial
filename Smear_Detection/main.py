@@ -27,4 +27,4 @@ def detect_smear_camer(camera):
 
 
 if __name__ == "__main__":
-    detect_smear_camer(1)
+    detect_smear_camer(2)
