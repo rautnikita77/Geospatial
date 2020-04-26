@@ -46,7 +46,7 @@ def gaussian_blur(img, size, iterations=1):
     return img
 
 
-def plot_bounding_box(img, camera=2, title_=''):
+def plot_bounding_box(img, camera=-1, title_=''):
     if camera == 0:
         cv2.rectangle(img, (850, 620), (1050, 800), (122, 0, 0), 10)
     elif camera == 2:

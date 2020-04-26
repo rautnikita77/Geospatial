@@ -1,11 +1,10 @@
 import cv2
-from matplotlib import pyplot as plt
 import numpy as np
-from utils import hist_eq, plot_bounding_box, erode, dilate, median_blur
+from utils import plot_bounding_box, erode, dilate, median_blur
 import os
 from tqdm import tqdm
 
-camera = 5
+camera = 2
 data_path = 'data/sample_drive/cam_' + str(camera)
 
 
@@ -28,4 +27,4 @@ def detect_smear_camer(camera):
 
 
 if __name__ == "__main__":
-    detect_smear_camer(camera)
+    detect_smear_camer(2)
