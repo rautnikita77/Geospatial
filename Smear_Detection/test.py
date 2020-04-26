@@ -71,7 +71,7 @@ for img in os.listdir(dir):
     mask = median_blur(mask, 7, 4)
     mask = dilate(mask, 11, 5)
     # mask = dilate(mask, 3, iterations=1)
-    plot_bounding_box(mask, camera, 'Mask camera ' + str(camera))
+    plot_bounding_box(mask, -1, 'Mask camera ' + str(camera))
     # cv2.imshow('a', mask)
     # cv2.waitKey(0)
 
