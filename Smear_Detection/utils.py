@@ -53,6 +53,8 @@ def plot_bounding_box(img, camera=2, title_=''):
         cv2.rectangle(img, (1180, 780), (1300, 900), (122, 0, 0), 10)
     elif camera == 3:
         cv2.rectangle(img, (1760, 1420), (1950, 1600), (122, 0, 0), 10)
+    elif camera == 5:
+        cv2.rectangle(img, (1610, 1580), (1780, 1770), (122, 0, 0), 10)
     plt.imshow(img, cmap='gray')
     plt.title(title_)
     plt.show()
