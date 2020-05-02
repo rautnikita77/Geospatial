@@ -6,6 +6,12 @@ from tqdm import tqdm
 
 
 def detect_smear_camer(camera):
+    """
+    Detect smear in the given camera and output the mask for it
+    Args:
+        camera (int): Camera number
+
+    """
     mean = cv2.imread(os.path.join(data_path, os.listdir(data_path)[0]), cv2.IMREAD_GRAYSCALE)
     equ = cv2.equalizeHist(mean)
     mean = gaussian_blur(equ, 9)
@@ -16,16 +22,15 @@ def detect_smear_camer(camera):
         mean = (mean * (n + 1) + equ) / (n + 2)
 
     mean = mean.astype(np.uint8)
+    plot_bounding_box(mean, title_='mean camera ' + str(camera))
     image = 255 - cv2.adaptiveThreshold(mean, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 75, 3)
-    plot_bounding_box(image, title_='og camera ' + str(camera))
+
     lines = custom_median_filter(image, 301, 1)
     lines = dilate(lines, 3)
-    plot_bounding_box(lines, title_='lines camera ' + str(camera))
-    plot_bounding_box(image - lines, title_='img - lines camera ' + str(camera))
-
     image = image - lines
     cv2.imwrite('outputs/mask_' + str(camera) + '.jpg', image)
     image = cv2.imread('outputs/mask_' + str(camera) + '.jpg', 0)
+
     image = median_blur(image, 75, 1)
     image = dilate(image, 7, 7)
     image = 255 - apply_thresholding_img(image, 2, 255)
@@ -33,6 +38,7 @@ def detect_smear_camer(camera):
     image = median_blur(image, 51, 5)
 
     plot_bounding_box(image, title_='mask camera ' + str(camera))
+    cv2.imwrite('outputs/mask_' + str(camera) + '.jpg', image)
 
 
 if __name__ == "__main__":
