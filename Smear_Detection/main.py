@@ -1,46 +1,47 @@
 import cv2
 import numpy as np
-from utils import plot_bounding_box, erode, dilate, median_blur, gaussian_blur
+from utils import plot_bounding_box, custom_median_filter, apply_thresholding_img, dilate, median_blur, gaussian_blur
 import os
 from tqdm import tqdm
 
-camera = 3
-data_path = 'data/sample_drive/cam_' + str(camera)
-
 
 def detect_smear_camer(camera):
-    mean = cv2.imread(os.path.join(data_path, os.listdir(data_path)[0]), 0)
+    """
+    Detect smear in the given camera and output the mask for it
+    Args:
+        camera (int): Camera number
+
+    """
+    mean = cv2.imread(os.path.join(data_path, os.listdir(data_path)[0]), cv2.IMREAD_GRAYSCALE)
     equ = cv2.equalizeHist(mean)
-    mean = cv2.GaussianBlur(equ, (9, 9), 0)
+    mean = gaussian_blur(equ, 9)
     for n, img in enumerate(tqdm(os.listdir(data_path)[1:])):
         image = cv2.imread(os.path.join(data_path, img), cv2.IMREAD_GRAYSCALE)
         equ = cv2.equalizeHist(image)
-        equ = cv2.GaussianBlur(equ, (9, 9), 0)
+        equ = gaussian_blur(equ, 9)
         mean = (mean * (n + 1) + equ) / (n + 2)
 
-    cv2.imwrite("mean.png", mean)
-    mean = cv2.imread('mean.png')
-    # plot_bounding_box(mean, -1, 'Mean camera ' + str(camera))
-    kernel = np.ones((3, 3), np.uint8)
-    bg = cv2.dilate(mean, kernel, iterations=1)
-    mask = mean - bg
-    cv2.imwrite("bg2.png", mask)
-    # plot_bounding_box(mask, -1, 'Foreground ' + str(camera))
-    for iterations in range(2):
-        mask = cv2.medianBlur(mask, 101)
+    mean = mean.astype(np.uint8)
+    plot_bounding_box(mean, title_='mean camera ' + str(camera))
+    image = 255 - cv2.adaptiveThreshold(mean, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 75, 3)
 
-    cv2.imwrite("a.png", mask)
-    plot_bounding_box(mask, -1, 'Mask camera ' + str(camera))
+    lines = custom_median_filter(image, 301, 1)
+    lines = dilate(lines, 3)
+    image = image - lines
+    cv2.imwrite('outputs/mask_' + str(camera) + '.jpg', image)
+    image = cv2.imread('outputs/mask_' + str(camera) + '.jpg', 0)
 
-    params = cv2.SimpleBlobDetector_Params()
+    image = median_blur(image, 75, 1)
+    image = dilate(image, 7, 7)
+    image = 255 - apply_thresholding_img(image, 2, 255)
+    image = dilate(image, 5, 15)
+    image = median_blur(image, 51, 5)
 
-    params.filterByArea = True
-    params.minArea = 300
-    params.maxArea = mask.shape[0] * mask.shape[1] / 2
-
-    mask = 255 - mask
-    detector = cv2.SimpleBlobDetector_create(params)
+    plot_bounding_box(image, title_='mask camera ' + str(camera))
+    cv2.imwrite('outputs/mask_' + str(camera) + '.jpg', image)
 
 
 if __name__ == "__main__":
-    detect_smear_camer(3)
+    for camera in [2, 1, 0, 3, 5]:
+        data_path = 'data/sample_drive/cam_' + str(camera)
+        detect_smear_camer(camera)
