@@ -42,8 +42,8 @@ def find_candidate_points(link_data):
                 probe_dict[index1]['co-ordinates'] = (x, y)
                 if (x1 < x < x2) and (y1 < y < y2):
                     sub_link_dict['candidates'].append(index1)
-            print(probe_dict)
-            sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict, link_dict[index])
+            if sub_link_dict['candidates']:
+                sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict, link_dict[index])
             link_dict[index]['subLinks'][i] = sub_link_dict
     print(link_dict)
     return candidates
