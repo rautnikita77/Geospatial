@@ -15,6 +15,7 @@ err = 2 * cov_constant
 def find_candidate_points(link_data):
     global link_dict, probe_dict
     candidates = []
+    flag = 0
     for index, row in tqdm(link_data.iterrows()):
         link_dict[index] = {}                   # {toRefSpeedLimit, fromRefSpeedLimit....., subLinks}
         link_dict[index]['toRefSpeedLimit'] = row.toRefSpeedLimit
@@ -39,7 +40,9 @@ def find_candidate_points(link_data):
             sub_link_dict['candidates'] = []
             for index1, probe in probe_dict.items():
                 (x, y) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude']])
-                probe_dict[index1]['co-ordinates'] = (x, y)
+                if flag == 0:
+                    flag = 1
+                    probe_dict[index1]['co-ordinates'] = (x, y)
                 if (x1 < x < x2) and (y1 < y < y2):
                     sub_link_dict['candidates'].append(index1)
             if sub_link_dict['candidates']:
