@@ -24,9 +24,3 @@ def gps_to_ecef_pyproj(lat_long_alt):
         lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
         x, y = pyproj.transform(lla, ecef, lat_long_alt[0], lat_long_alt[1], radians=False)
         return (x, y)
-
-
-
-
-
-print(gps_to_ecef_pyproj([2,2]))

@@ -2,11 +2,12 @@ from Slope_Estimation.utils import gps_to_ecef_pyproj
 import numpy as np
 
 
-def refine_points(link_id, candidate_points):
+def refine_points(sub_link_id, sub_link_dict, candidate_points):
     """
     Refines the candidate points
     Args:
-        link_id (int): Identifier for link
+        sub_link_id (int): Identifier for sub link
+        sub_link_dict (dict): Sub link dictionary
         candidate_points (ndarray): List of candidate point keys
 
     Returns:
@@ -19,7 +20,7 @@ def refine_points(link_id, candidate_points):
     total_probes = 0
     for n, p in enumerate(candidate_points):
         speed_probe = probe_dict[p]['speed'] % 180
-        slope_link = link_dict[link_id]['theta']
+        slope_link = sub_link_dict[sub_link_id]['theta']
         slope_probe = probe_dict[p]['direction']
         # if abs(abs(slope_link) - slope_probe) >= 90:
         #     if slope_link >= 0:
@@ -35,7 +36,7 @@ def refine_points(link_id, candidate_points):
             direction = 'To'
         else:
             direction = 'From'
-        speed_link = link_dict[link_id][direction + '_speed']
+        speed_link = sub_link_dict[sub_link_id][direction + '_speed']
         if speed_probe > speed_link + 10 or speed_probe < speed_link - 40:      # Remove if speed is too high or too low
             points_to_remove.append(n)
         else:

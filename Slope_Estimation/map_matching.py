@@ -2,12 +2,15 @@ import os
 import math
 import pandas as pd
 from Slope_Estimation.utils import gps_to_ecef_pyproj
+from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
 
 data = 'data'
 
 link_dict, probe_dict = {}, {}
-err = 2
+cov_constant = 1.165 / 100
+err = 2 * cov_constant
+
 
 
 def find_candidate_points(link_data, probe_data):
@@ -28,7 +31,7 @@ def find_candidate_points(link_data, probe_data):
             e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
             theta = (s[1] - e[1]) / (s[0] - e[0])
             (d1, d2) = (int(link_dict[index]['toRefNumLanes'])*2, int(link_dict[index]['fromRefSpeedLimit'])*2)
-            (x1, y1) = (s[0] + d1*math.sin(theta) + err, s[1] + d1*math.cos(theta) + err)
+            (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + err, s[1] + d1*math.cos(theta)*cov_constant + err)
             (x2, y2) = (e[0] + d2*math.sin(theta) - err, e[1] + d2*math.cos(theta) - err)
             x1, x2 = min(x1, x2), max(x1, x2)
             y1, y2 = min(y1, y2), max(y1, y2)
@@ -56,8 +59,8 @@ def main():
     link_data = pd.read_csv(os.path.join(data, 'Partition6467LinkData.csv'), names=link_header, usecols=link_cols,
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
-    probe_dict = probe_data.to_dict('index')
-    candidates = find_candidate_points(link_data.iloc[0:10], probe_data.iloc[0:10], probe_dict)
+    probe_dict = probe_data.iloc[0:10].to_dict('index')
+    candidates = find_candidate_points(link_data.iloc[0:10], probe_data.iloc[0:10])
     # print(candidates)
 
 
