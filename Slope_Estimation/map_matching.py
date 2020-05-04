@@ -12,8 +12,7 @@ cov_constant = 1.165 / 100
 err = 2 * cov_constant
 
 
-
-def find_candidate_points(link_data, probe_data):
+def find_candidate_points(link_data):
     global link_dict, probe_dict
     candidates = []
     for index, row in tqdm(link_data.iterrows()):
@@ -38,11 +37,13 @@ def find_candidate_points(link_data, probe_data):
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
-            for index1, probe in tqdm(probe_dict.items()):
+            for index1, probe in probe_dict.items():
                 (x, y) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude']])
                 probe_dict[index1]['co-ordinates'] = (x, y)
                 if (x1 < x < x2) and (y1 < y < y2):
                     sub_link_dict['candidates'].append(index1)
+            print(probe_dict)
+            sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict, link_dict[index])
             link_dict[index]['subLinks'][i] = sub_link_dict
     print(link_dict)
     return candidates
@@ -60,7 +61,7 @@ def main():
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
     probe_dict = probe_data.iloc[0:10].to_dict('index')
-    candidates = find_candidate_points(link_data.iloc[0:10], probe_data.iloc[0:10])
+    candidates = find_candidate_points(link_data.iloc[0:10])
     # print(candidates)
 
 
