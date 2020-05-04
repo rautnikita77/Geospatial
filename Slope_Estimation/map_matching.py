@@ -37,8 +37,10 @@ def find_candidate_points(link_data):
             e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
             theta = (s[1] - e[1]) / (s[0] - e[0])
             (d1, d2) = (int(link_dict[index]['toRefNumLanes'])*2, int(link_dict[index]['fromRefSpeedLimit'])*2)
-            (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + err, s[1] + d1*math.cos(theta)*cov_constant + err)
-            (x2, y2) = (e[0] + d2*math.sin(theta) - err, e[1] + d2*math.cos(theta) - err)
+            (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + (err*math.sin(theta)/abs(math.sin(theta))),
+                        s[1] + d1*math.cos(theta)*cov_constant - (err*math.cos(theta)/abs(math.cos(theta))))
+            (x2, y2) = (e[0] + d2*math.sin(theta) - (err*math.sin(theta)/abs(math.sin(theta))),
+                        e[1] + d2*math.cos(theta) + (err*math.cos(theta)/abs(math.cos(theta))))
             x1, x2 = min(x1, x2), max(x1, x2)
             y1, y2 = min(y1, y2), max(y1, y2)
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
