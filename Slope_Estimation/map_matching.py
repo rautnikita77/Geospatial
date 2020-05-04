@@ -12,6 +12,10 @@ cov_constant = 1.165 / 100
 err = 2 * cov_constant
 
 
+def equations(x1, y1, xp, yp, m):
+    return (yp - y1) - (xp - x1)*m
+
+
 def find_candidate_points(link_data):
     global link_dict, probe_dict
     candidates = []
