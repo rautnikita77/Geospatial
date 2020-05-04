@@ -1,5 +1,6 @@
 import os
 import math
+import random
 import pandas as pd
 from Slope_Estimation.utils import gps_to_ecef_pyproj
 from Slope_Estimation.refine import refine_points
@@ -12,8 +13,6 @@ cov_constant = 1.165 / 100
 err = 2 * cov_constant
 
 
-def equations(x1, y1, xp, yp, m):
-    return (yp - y1) - (xp - x1)*m
 
 
 def find_candidate_points(link_data):
@@ -22,7 +21,9 @@ def find_candidate_points(link_data):
     candidates = []
     flag = 0
     equ = lambda x, y, xp, yp, m : (yp - y) - m*(xp - x)
+    alt = lambda h1, h2, x1, y1, x2, y2: math.tan(math.degrees(math.asin(math.radians(abs(h1-h2)/((x1 - x2)**2 + (y1-y2)**2)**(1/2)))))
     for index, row in tqdm(link_data.iterrows()):
+        link_slope = 0
         link_dict[index] = {}                   # {toRefSpeedLimit, fromRefSpeedLimit....., subLinks}
         link_dict[index]['toRefSpeedLimit'] = row.toRefSpeedLimit
         link_dict[index]['fromRefSpeedLimit'] = row.fromRefSpeedLimit
@@ -30,36 +31,60 @@ def find_candidate_points(link_data):
         link_dict[index]['fromRefNumLanes'] = row.fromRefNumLanes
         link_dict[index]['subLinks'] = {}
         points = [(x.split('/')) for x in row.shapeInfo.split('|')]
-        # print(points)
-        for i in range(len(points)-1):          # for each sub-linkx
+        for i in range(len(points)-1):          # for each sub-link
             sub_link_dict = {}                  # {co-ordinates, theta, candidates}
             s = gps_to_ecef_pyproj(list(map(float, points[i][:2])))
             e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
             theta = (s[1] - e[1]) / (s[0] - e[0])
             (d1, d2) = (int(link_dict[index]['toRefNumLanes'])*2, int(link_dict[index]['fromRefSpeedLimit'])*2)
-            (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + (err*math.sin(theta)/abs(math.sin(theta))),
-                        s[1] + d1*math.cos(theta)*cov_constant - (err*math.cos(theta)/abs(math.cos(theta))))
-            (x2, y2) = (e[0] + d2*math.sin(theta) - (err*math.sin(theta)/abs(math.sin(theta))),
-                        e[1] + d2*math.cos(theta) + (err*math.cos(theta)/abs(math.cos(theta))))
-            x1, x2 = min(x1, x2), max(x1, x2)
-            y1, y2 = min(y1, y2), max(y1, y2)
+            (x1, y1) = (s[0] + d1*math.sin(math.degrees(theta))*cov_constant + (err*math.sin(math.degrees(theta))/abs(math.sin(math.degrees(theta)))),
+                        s[1] + d1*math.cos(math.degrees(theta))*cov_constant - (err*math.cos(math.degrees(theta))/abs(math.cos(math.degrees(theta)))))
+            (x2, y2) = (e[0] + d2*math.sin(math.degrees(theta))*cov_constant - (err*math.sin(math.degrees(theta))/abs(math.sin(math.degrees(theta)))),
+                        e[1] + d2*math.cos(math.degrees(theta))*cov_constant + (err*math.cos(math.degrees(theta))/abs(math.cos(math.degrees(theta)))))
+
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
-            for index1, probe in probe_dict.items():    # shortlist candidates
-                (x, y) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude']])
+            for index1, probe in probe_dict.items():
+                (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
                 if flag == 0:
-                    flag = 1
                     probe_dict[index1]['co-ordinates'] = (x, y)
-                if equ(x1, y1, x, y, math.tan(theta)) > 0  and equ(x1, y1, x, y, math.tan(-1/theta)) < 0 \
-                        and equ(x2, y2, x, y, math.tan(theta)) < 0  and equ(x2, y2, x, y, math.tan(-1/theta)) > 0:
+                    probe_dict[index1]['altitude'] = z
+                if equ(x1, y1, x, y, math.tan(math.degrees(theta))) > 0\
+                        and equ(x1, y1, x, y, math.tan(math.degrees(-1/theta))) < 0 \
+                        and equ(x2, y2, x, y, math.tan(math.degrees(theta))) < 0\
+                        and equ(x2, y2, x, y, math.tan(math.degrees(-1/theta))) > 0:
+
                     sub_link_dict['candidates'].append(index1)
+            flag = 1
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict, link_dict[index])
+            # sub_link_dict['candidates'] = [0,1,2,3,4,5,6,7,8,9]
             link_dict[index]['subLinks'][i] = sub_link_dict
-            print(sub_link_dict['candidates'])
 
-    return candidates
+            altitude = []
+            if len(sub_link_dict['candidates']) not in [0,1]:
+                for j in range(5):
+                    a, b = random.sample(sub_link_dict['candidates'], 2)
+
+                    altitude.append(alt(probe_dict[a]['altitude'], probe_dict[b]['altitude'],
+                                        probe_dict[a]['co-ordinates'][0], probe_dict[a]['co-ordinates'][1],
+                                        probe_dict[b]['co-ordinates'][0], probe_dict[b]['co-ordinates'][1]))
+
+
+                [(x1, y1),(x2, y2)] = sub_link_dict['co-ordinates']
+                link_slope += ((x1 - x2)**2 + (y1 - y2)**2)**(1/2)*sum(altitude)/len(altitude)
+
+            else:
+                link_slope += -1
+
+
+
+        link_dict[index]['slope'] = link_slope
+
+
+    # print(link_dict)
+    return candidates, link_dict
 
 
 def main():
@@ -73,9 +98,11 @@ def main():
     link_data = pd.read_csv(os.path.join(data, 'Partition6467LinkData.csv'), names=link_header, usecols=link_cols,
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
-    probe_dict = probe_data.iloc[0:500].to_dict('index')
-    candidates = find_candidate_points(link_data.iloc[0:10])
+    probe_dict = probe_data.iloc[0:10].to_dict('index')
+
+    candidates, link_dict = find_candidate_points(link_data.iloc[0:10])
     # print(candidates)
+    print(link_dict)
 
 
 if __name__ == '__main__':
