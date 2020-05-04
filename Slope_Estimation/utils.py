@@ -13,7 +13,6 @@ def plot_lat_long_points(points):
 
 
 def gps_to_ecef_pyproj(lat_long_alt):
-
     if len(lat_long_alt) == 3:
         ecef = pyproj.Proj(proj='geocent', ellps='WGS84', datum='WGS84')
         lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
@@ -24,3 +23,18 @@ def gps_to_ecef_pyproj(lat_long_alt):
         lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
         x, y = pyproj.transform(lla, ecef, lat_long_alt[0], lat_long_alt[1], radians=False)
         return (x, y)
+
+
+def delete_keys_dict(dict_, keys):
+    """
+    Delete multiple keys from a dictionary
+    Args:
+        dict_ (dict): Dictionary in which keys need to be removed
+        keys (ndarray): List of keys to be removed
+
+    Returns:
+        dict_ with removed keys
+    """
+    for k in keys:
+        del dict_[k]
+    return dict_

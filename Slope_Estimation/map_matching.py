@@ -31,7 +31,7 @@ def find_candidate_points(link_data):
         link_dict[index]['subLinks'] = {}
         points = [(x.split('/')) for x in row.shapeInfo.split('|')]
         # print(points)
-        for i in range(len(points)-1):          # for each sub-link
+        for i in range(len(points)-1):          # for each sub-linkx
             sub_link_dict = {}                  # {co-ordinates, theta, candidates}
             s = gps_to_ecef_pyproj(list(map(float, points[i][:2])))
             e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
@@ -46,7 +46,7 @@ def find_candidate_points(link_data):
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
-            for index1, probe in probe_dict.items():
+            for index1, probe in probe_dict.items():    # shortlist candidates
                 (x, y) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude']])
                 if flag == 0:
                     flag = 1
@@ -57,7 +57,8 @@ def find_candidate_points(link_data):
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict, link_dict[index])
             link_dict[index]['subLinks'][i] = sub_link_dict
-    print(link_dict)
+            print(sub_link_dict['candidates'])
+
     return candidates
 
 
@@ -72,7 +73,7 @@ def main():
     link_data = pd.read_csv(os.path.join(data, 'Partition6467LinkData.csv'), names=link_header, usecols=link_cols,
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
-    probe_dict = probe_data.iloc[0:10].to_dict('index')
+    probe_dict = probe_data.iloc[0:500].to_dict('index')
     candidates = find_candidate_points(link_data.iloc[0:10])
     # print(candidates)
 
