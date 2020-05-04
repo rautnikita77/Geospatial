@@ -17,9 +17,11 @@ def equations(x1, y1, xp, yp, m):
 
 
 def find_candidate_points(link_data):
+
     global link_dict, probe_dict
     candidates = []
     flag = 0
+    equ = lambda x, y, xp, yp, m : (yp - y) - m*(xp - x)
     for index, row in tqdm(link_data.iterrows()):
         link_dict[index] = {}                   # {toRefSpeedLimit, fromRefSpeedLimit....., subLinks}
         link_dict[index]['toRefSpeedLimit'] = row.toRefSpeedLimit
@@ -47,7 +49,8 @@ def find_candidate_points(link_data):
                 if flag == 0:
                     flag = 1
                     probe_dict[index1]['co-ordinates'] = (x, y)
-                if (x1 < x < x2) and (y1 < y < y2):
+                if equ(x1, y1, x, y, math.tan(theta)) > 0  and equ(x1, y1, x, y, math.tan(-1/theta)) < 0 \
+                        and equ(x2, y2, x, y, math.tan(theta)) < 0  and equ(x2, y2, x, y, math.tan(-1/theta)) > 0:
                     sub_link_dict['candidates'].append(index1)
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict, link_dict[index])
