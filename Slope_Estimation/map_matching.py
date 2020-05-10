@@ -11,7 +11,7 @@ data = 'data'
 
 link_dict, probe_dict = {}, {}
 
-cov_constant = 0.997
+cov_constant = 1
 err = 0 * cov_constant
 
 
@@ -32,23 +32,29 @@ def find_candidate_points(link_data):
         link_dict[index]['fromRefNumLanes'] = row.fromRefNumLanes
         link_dict[index]['subLinks'] = {}
         points = [(x.split('/')) for x in row.shapeInfo.split('|')]
-        print(points)
+        # print(points)
         for i in range(len(points)-1):          # for each sub-link
             sub_link_dict = {}                  # {co-ordinates, theta, candidates}
             s = gps_to_ecef_pyproj(list(map(float, points[i][:2])))
             e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
+            s = (2, 1)
+            e = (1, 2)
+            m = (s[1] - e[1]) / (s[0] - e[0])
+            theta = math.atan(m)  # in radians
 
-            theta = (s[1] - e[1]) / (s[0] - e[0])
-            # print('s', s, e)
+            print(m)
+            print(theta)
 
-            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 100)*2, int(link_dict[index]['fromRefSpeedLimit'] + 30)*2)
-            # print(d1, d2)
+            # print(link_dict[index]['toRefNumLanes'], link_dict[index]['fromRefSpeedLimit'])
+            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 20)*2, int(link_dict[index]['fromRefSpeedLimit'] + 20)*2)
+            (d1, d2) = (1,1)
+            # print(math.sin(math.radians(theta)))
+            (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + (err*math.sin(theta)/abs(math.sin(theta))),
+                        s[1] - d1*math.cos(theta)*cov_constant - (err*math.cos(theta)/abs(math.cos(theta))))
+            (x2, y2) = (e[0] - d2*math.sin(theta)*cov_constant - (err*math.sin(theta)/abs(math.sin(theta))),
+                        e[1] + d2*math.cos(theta)*cov_constant + (err*math.cos(theta)/abs(math.cos(theta))))
 
-            (x1, y1) = (s[0] + d1*math.sin(math.degrees(theta))*cov_constant + (err*math.sin(math.degrees(theta))/abs(math.sin(math.degrees(theta)))),
-                        s[1] - d1*math.cos(math.degrees(theta))*cov_constant - (err*math.cos(math.degrees(theta))/abs(math.cos(math.degrees(theta)))))
-            (x2, y2) = (e[0] - d2*math.sin(math.degrees(theta))*cov_constant - (err*math.sin(math.degrees(theta))/abs(math.sin(math.degrees(theta)))),
-                        e[1] + d2*math.cos(math.degrees(theta))*cov_constant + (err*math.cos(math.degrees(theta))/abs(math.cos(math.degrees(theta)))))
-
+            print(x1, y1, x2, y2)
 
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
             sub_link_dict['theta'] = theta
@@ -57,14 +63,17 @@ def find_candidate_points(link_data):
             for index1, probe in tqdm(probe_dict.items()):
 
                 (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
+                x = (s[0] + e[0])/2
+                y = (s[1] + e[1])/2
 
                 if flag == 0:
                     probe_dict[index1]['co-ordinates'] = (x, y)
                     probe_dict[index1]['altitude'] = z
-                if equ(x1, y1, x, y, math.tan(math.degrees(theta))) >= 0 \
-                        and equ(x1, y1, x, y, math.tan(math.degrees(-1 / theta))) <= 0 \
-                        and equ(x2, y2, x, y, math.tan(math.degrees(theta))) <= 0 \
-                        and equ(x2, y2, x, y, math.tan(math.degrees(-1 / theta))) >= 0:
+
+                if equ(x1, y1, x, y, math.tan(theta)) >= 0 \
+                        and equ(x1, y1, x, y, math.tan(math.atan(-1/m))) <= 0 \
+                        and equ(x2, y2, x, y, math.tan(theta)) <= 0 \
+                        and equ(x2, y2, x, y, math.tan(math.atan(-1/m))) >= 0:
                     # print('a')
                     sub_link_dict['candidates'].append(index1)
             flag = 1
@@ -130,8 +139,8 @@ def main():
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    probe_dict = probe_data.sample(n=7500).to_dict('index')
-    # probe_dict = probe_data[:1000].to_dict('index')
+    # probe_dict = probe_data.sample(n=1000).to_dict('index')
+    probe_dict = probe_data[:1000].to_dict('index')
     # Create 16 parts of data. One probe_dict and one link_data dataframe for each part
     # For each part
     # find_candidate_points(probe_dict[i], link_data[i])
