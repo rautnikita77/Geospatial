@@ -59,7 +59,6 @@ def find_candidate_points(link_data):
             print(sub_link_dict['candidates'])
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'], probe_dict = refine_points(sub_link_dict, probe_dict, link_dict[index])
-            # sub_link_dict['candidates'] = [0,1,2,3,4,5,6,7,8,9]
             link_dict[index]['subLinks'][i] = sub_link_dict
 
             altitude = []
@@ -79,13 +78,32 @@ def find_candidate_points(link_data):
             print(sub_link_dict['candidates'])
         link_dict[index]['slope'] = link_slope
 
-    # print(link_dict)
     return candidates, link_dict
 
 
 def partition_data(probe_dict, link_data):
-    bounding_box_dict = get_bounding_box_coordinates(probe_dict, link_data)
-    # for
+    n = 2
+    coordinates = get_bounding_box_coordinates(n, probe_dict, link_data)
+    probe_dicts, link_dataframes = {x: [] for x in range(n*n)}, []
+
+    (x1, y1), (x2, y2) = coordinates
+    x1, y1 = 53.207633, 7.215272
+    x2, y2 = 47.727688, 15.064739
+    dx = abs((x2 - x1) / n)
+    dy = abs((y1 - y2) / n)
+
+    for n, probe in probe_dict:
+        x, y = gps_to_ecef_pyproj([probe['latitude'], probe_dict['longitude']])
+
+        i = (x - x1) // dx
+        j = (y - y2) // dy
+
+        dict_index = (n * j) + i
+
+        probe_dicts[dict_index].append(probe)
+
+    # for zone, coordinates in bounding_box_dict.items():
+    #     (x1, y1), (x2, y2) = coordinates
 
 
 def main():
@@ -100,15 +118,15 @@ def main():
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    probe_dict = probe_data.sample(n=75745).to_dict('index')
+    probe_dict = probe_data.sample(n=1000).to_dict('index')
 
     # Create 16 parts of data. One probe_dict and one link_data dataframe for each part
     # For each part
     #   find_candidate_points(probe_dict[i], link_data[i])
 
-    # probe_dicts, link_dataframes = partition_data(probe_dict, link_data)
+    probe_dicts, link_dataframes = partition_data(probe_dict, link_data)
 
-    candidates, link_dict = find_candidate_points(link_data.iloc[2000:2001])
+    # candidates, link_dict = find_candidate_points(link_data.iloc[2000:2001])
 
 
 if __name__ == '__main__':
