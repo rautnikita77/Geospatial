@@ -85,7 +85,7 @@ def find_candidate_points(link_data):
 
 def partition_data(probe_dict, link_data):
     bounding_box_dict = get_bounding_box_coordinates(probe_dict, link_data)
-    pass
+    # for
 
 
 def main():
