@@ -1,11 +1,7 @@
 import os
-import math
-import random
 import pandas as pd
 from Slope_Estimation.utils import gps_to_ecef_pyproj
-from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
-from Slope_Estimation.utils import get_bounding_box_coordinates
 
 
 def partition_data(probe_dict, link_data):
