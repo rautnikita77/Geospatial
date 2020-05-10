@@ -15,7 +15,6 @@ cov_constant = 0.997
 err = 0 * cov_constant
 
 
-
 def find_candidate_points(link_data):
     global link_dict, probe_dict
 
