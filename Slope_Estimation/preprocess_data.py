@@ -70,7 +70,7 @@ def partition_probe(probe_dict, n):
 if __name__ == "__main__":
     data = 'data'
     n = 128
-    samples = 500_000
+    samples = 100_000
     # link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo']
     probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
     # link_header = ['linkPVID', 'refNodeID', 'nrefNodeID', 'length', 'functionalClass', 'directionOfTravel', 'speedCategory',
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     #                         index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    probe_dict = probe_data.sample(n=500_000).to_dict('index')
+    probe_dict = probe_data.sample(n=samples).to_dict('index')
     # link_dataframe = partition_link(link_data)
     probe_dicts = partition_probe(probe_dict, n)
 
