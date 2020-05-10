@@ -13,7 +13,7 @@ link_dict, probe_dict = {}, {}
 cov_constant = 1.165 / 100
 err = 200 * cov_constant
 cov_constant = 1
-err = 0
+# err = 0
 
 
 def find_candidate_points(link_data):
