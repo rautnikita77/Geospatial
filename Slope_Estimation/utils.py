@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pyproj
 import pandas as pd
+from tqdm import tqdm
 
 
 def plot_lat_long_points(points):
@@ -53,7 +54,24 @@ def get_bounding_box_coordinates(n, probe_dict, link_data):
         coordinates dictionary for each zone number as key and it's bounding box coordinates as it values
 
     """
-    print(probe_dict, link_data)
+    # print(link_data.shapeInfo)
+    link_coordinates = []
+    for i, row in enumerate(tqdm(link_data.shapeInfo)):
+        points = [(x.split('/')) for x in row.split('|')]
+        link_coordinates.append(gps_to_ecef_pyproj(points[0][:2]))
+        link_coordinates.append(gps_to_ecef_pyproj(points[-1][:2]))
+    link_coordinates = np.array(link_coordinates)
+    x_max, y_max = np.amax(link_coordinates, axis=0)
+    x_min, y_min = np.amin(link_coordinates, axis=0)
+    print(x_min, y_min, x_max, y_max )
+    # x_interval = (x_max - x_min)/n
+    # y_interval = (y_max - y_min)/n
+    # coordinates_dict = {}
+    #
+    # for i in range(n):
+    #     coordinates_dict[i] = [x_min + x_interval*i]
+    return x_min, y_min, x_max, y_max
+
 
 
 if __name__ == "__main__":
@@ -71,4 +89,4 @@ if __name__ == "__main__":
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
     probe_dict = probe_data.sample(n=100).to_dict('index')
-    get_bounding_box_coordinates(4, probe_dict, link_data.iloc[0:10])
+    get_bounding_box_coordinates(4, probe_dict, link_data)
