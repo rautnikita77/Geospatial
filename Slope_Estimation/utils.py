@@ -3,6 +3,7 @@ import os
 import pyproj
 import pandas as pd
 from tqdm import tqdm
+import pickle
 # 3727482.4232750153 4837909.841133979 4002608.377697181 5067892.186070938 = x_min, y_min, x_max, y_max
 
 def plot_lat_long_points(points):
@@ -72,10 +73,13 @@ def delete_keys_dict(dict_, keys):
 #     return x_min, y_min, x_max, y_max
 
 
-
 def slope_using_two_points(x1, x2, y1, y2):
     return (y1 - y2) / (x1 - x2)
 
+
+def save_pickle(data, file):
+    with open(file, 'wb') as f:
+        pickle.dump(data, f)
 
 # if __name__ == "__main__":
 #     data = 'data'
