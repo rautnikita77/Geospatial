@@ -5,7 +5,6 @@ import pandas as pd
 from Slope_Estimation.utils import gps_to_ecef_pyproj
 from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
-from Slope_Estimation.utils import get_bounding_box_coordinates
 
 data = 'data'
 
@@ -13,7 +12,6 @@ link_dict, probe_dict = {}, {}
 
 cov_constant = 0.997
 err = 0 * cov_constant
-
 
 
 def find_candidate_points(link_data):
@@ -97,10 +95,10 @@ def find_candidate_points(link_data):
 
 def partition_data(probe_dict, link_data):
     n = 2
-    coordinates = get_bounding_box_coordinates(n, probe_dict, link_data)
+    # coordinates = get_bounding_box_coordinates(n, probe_dict, link_data)
     probe_dicts, link_dataframes = {x: [] for x in range(n*n)}, []
 
-    (x1, y1), (x2, y2) = coordinates
+    # (x1, y1), (x2, y2) = coordinates
     x1, y1 = 53.207633, 7.215272
     x2, y2 = 47.727688, 15.064739
     dx = abs((x2 - x1) / n)
