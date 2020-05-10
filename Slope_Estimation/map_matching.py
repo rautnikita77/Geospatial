@@ -6,12 +6,14 @@ from Slope_Estimation.utils import gps_to_ecef_pyproj
 from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
 
+
 data = 'data'
 
 link_dict, probe_dict = {}, {}
 
 cov_constant = 0.997
 err = 0 * cov_constant
+
 
 
 def find_candidate_points(link_data):
@@ -39,7 +41,7 @@ def find_candidate_points(link_data):
             theta = (s[1] - e[1]) / (s[0] - e[0])
             # print('s', s, e)
 
-            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 30)*2, int(link_dict[index]['fromRefSpeedLimit'] + 30)*2)
+            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 100)*2, int(link_dict[index]['fromRefSpeedLimit'] + 30)*2)
             # print(d1, d2)
 
             (x1, y1) = (s[0] + d1*math.sin(math.degrees(theta))*cov_constant + (err*math.sin(math.degrees(theta))/abs(math.sin(math.degrees(theta)))),
@@ -48,16 +50,14 @@ def find_candidate_points(link_data):
                         e[1] + d2*math.cos(math.degrees(theta))*cov_constant + (err*math.cos(math.degrees(theta))/abs(math.cos(math.degrees(theta)))))
 
 
-            print("a", x1, y1, x2, y2)
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
             # print(sub_link_dict['co-ordinates'])
             for index1, probe in tqdm(probe_dict.items()):
+
                 (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
-                # print("b", x, y)
-                x = 3917856
-                y = 4925030
+
                 if flag == 0:
                     probe_dict[index1]['co-ordinates'] = (x, y)
                     probe_dict[index1]['altitude'] = z
@@ -95,10 +95,10 @@ def find_candidate_points(link_data):
 
 def partition_data(probe_dict, link_data):
     n = 2
-    # coordinates = get_bounding_box_coordinates(n, probe_dict, link_data)
+    coordinates = get_bounding_box_coordinates(n, probe_dict, link_data)
     probe_dicts, link_dataframes = {x: [] for x in range(n*n)}, []
 
-    # (x1, y1), (x2, y2) = coordinates
+    (x1, y1), (x2, y2) = coordinates
     x1, y1 = 53.207633, 7.215272
     x2, y2 = 47.727688, 15.064739
     dx = abs((x2 - x1) / n)
@@ -130,15 +130,15 @@ def main():
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    # probe_dict = probe_data.sample(n=1000).to_dict('index')
-    probe_dict = probe_data[:1000].to_dict('index')
+    probe_dict = probe_data.sample(n=7500).to_dict('index')
+    # probe_dict = probe_data[:1000].to_dict('index')
     # Create 16 parts of data. One probe_dict and one link_data dataframe for each part
     # For each part
     # find_candidate_points(probe_dict[i], link_data[i])
 
     # probe_dicts, link_dataframes = partition_data(probe_dict, link_data)
     # print(link_data)
-    candidates, link_dict = find_candidate_points(link_data)
+    candidates, link_dict = find_candidate_points(link_data.iloc[0:1])
 
 
 if __name__ == '__main__':
