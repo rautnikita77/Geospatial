@@ -10,10 +10,10 @@ from Slope_Estimation.utils import get_bounding_box_coordinates
 data = 'data'
 
 link_dict, probe_dict = {}, {}
-cov_constant = 1.165 / 100
-err = 200 * cov_constant
-cov_constant = 1
-err = 0
+
+cov_constant = 0.997
+err = 0 * cov_constant
+
 
 
 def find_candidate_points(link_data):
@@ -32,6 +32,7 @@ def find_candidate_points(link_data):
         link_dict[index]['fromRefNumLanes'] = row.fromRefNumLanes
         link_dict[index]['subLinks'] = {}
         points = [(x.split('/')) for x in row.shapeInfo.split('|')]
+        print(points)
         for i in range(len(points)-1):          # for each sub-link
             sub_link_dict = {}                  # {co-ordinates, theta, candidates}
             s = gps_to_ecef_pyproj(list(map(float, points[i][:2])))
@@ -40,7 +41,7 @@ def find_candidate_points(link_data):
             theta = (s[1] - e[1]) / (s[0] - e[0])
             # print('s', s, e)
 
-            (d1, d2) = (int(link_dict[index]['toRefNumLanes'])*2, int(link_dict[index]['fromRefSpeedLimit'])*2)
+            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 30)*2, int(link_dict[index]['fromRefSpeedLimit'] + 30)*2)
             # print(d1, d2)
 
             (x1, y1) = (s[0] + d1*math.sin(math.degrees(theta))*cov_constant + (err*math.sin(math.degrees(theta))/abs(math.sin(math.degrees(theta)))),
@@ -57,8 +58,8 @@ def find_candidate_points(link_data):
             for index1, probe in tqdm(probe_dict.items()):
                 (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
                 # print("b", x, y)
-                x = 3
-                y = 4
+                x = 3917856
+                y = 4925030
                 if flag == 0:
                     probe_dict[index1]['co-ordinates'] = (x, y)
                     probe_dict[index1]['altitude'] = z
