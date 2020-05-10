@@ -38,3 +38,17 @@ def delete_keys_dict(dict_, keys):
     for k in keys:
         del dict_[k]
     return dict_
+
+
+def get_bounding_box_coordinates(probe_dict, link_data):
+    """
+    Get bounding box for each zone of the map
+    Args:
+        probe_dict (dict): Dictionary of all probe points
+        link_data (dataframe): Pandas df of all link data
+
+    Returns:
+        coordinates dictionary for each zone number as key and it's bounding box coordinates as it values
+
+    """
+    pass

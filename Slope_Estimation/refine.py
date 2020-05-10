@@ -37,7 +37,6 @@ def refine_points(sub_link_dict, probe_dict, link_dict):
             direction = 'to' if orientation == 1 else 'from'
         else:
             direction = 'from' if orientation == 1 else 'to'
-        print(direction)
         speed_link = link_dict[direction + 'RefSpeedLimit']
         if speed_probe > speed_link + 10 or speed_probe < speed_link - 40:      # Remove if speed is too high or too low
             points_to_remove.append(n)
