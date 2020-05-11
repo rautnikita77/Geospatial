@@ -66,7 +66,7 @@ def partition_probe(probe_dict, n):
 if __name__ == "__main__":
     data = 'data'
     n = 128
-    samples = 10000
+    samples = 100000
 
     germany = Metadata(n)
 

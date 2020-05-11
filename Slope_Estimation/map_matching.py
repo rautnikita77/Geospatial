@@ -60,7 +60,7 @@ def find_candidate_points(link_data, probe_dict):
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
 
-            for index1, probe in enumerate(tqdm(probe_dict[zone])):
+            for index1, probe in tqdm(probe_dict[zone].items()):
 
                 x, y = probe['co-ordinates']
 
@@ -74,7 +74,7 @@ def find_candidate_points(link_data, probe_dict):
             print('candidates', len(sub_link_dict['candidates']))
             print('Zone:', zone)
             if sub_link_dict['candidates']:
-                sub_link_dict['candidates'], probe_dict = refine_points(sub_link_dict, probe_dict, link_dict[index])
+                sub_link_dict['candidates'], probe_dict[zone] = refine_points(sub_link_dict, probe_dict[zone], link_dict[index])
             link_dict[index]['subLinks'][point_idx] = sub_link_dict
 
             altitude = []
@@ -112,7 +112,7 @@ def main():
     # probe_dict = probe_data.sample(n=10000).to_dict('index')
     # probe_dict = probe_data[:1000].to_dict('index')
 
-    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_100000_samples.pkl'))
+    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_10000_samples.pkl'))
     candidates, link_dict = find_candidate_points(link_data.iloc[0:1], probe_dict)
 
 
