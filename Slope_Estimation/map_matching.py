@@ -24,7 +24,7 @@ def find_candidate_points(link_data, probe_dict):
     candidates = []
     flag = 0
     equ = lambda x, y, xp, yp, m: (yp - y) - m*(xp - x)
-    alt = lambda h1, h2, x1, y1, x2, y2: math.tan(math.degrees(math.asin(math.radians(abs(h1-h2)/((x1 - x2)**2 + (y1-y2)**2)**(1/2)))))
+    alt = lambda h1, h2, x1, y1, x2, y2: math.tan(math.asin(abs(h1-h2)/((x1 - x2)**2 + (y1-y2)**2)**(1/2)))
     for index, row in (link_data.iterrows()):
         link_slope = 0
         link_dict[index] = {}                   # {toRefSpeedLimit, fromRefSpeedLimit....., subLinks}
@@ -62,12 +62,6 @@ def find_candidate_points(link_data, probe_dict):
 
             for index1, probe in enumerate(tqdm(probe_dict[zone])):
 
-                # (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
-                #
-                # if flag == 0:
-                #     probe['co-ordinates'] = (x, y)
-                #     probe['altitude'] = z
-
                 x, y = probe['co-ordinates']
 
                 if equ(x1, y1, x, y, math.tan(theta)) >= 0 \
@@ -76,8 +70,9 @@ def find_candidate_points(link_data, probe_dict):
                         and equ(x2, y2, x, y, math.tan(math.atan(-1/m))) >= 0:
 
                     sub_link_dict['candidates'].append(index1)
-            # flag = 1
+
             print('candidates', len(sub_link_dict['candidates']))
+            print('Zone')
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'], probe_dict = refine_points(sub_link_dict, probe_dict, link_dict[index])
             link_dict[index]['subLinks'][point_idx] = sub_link_dict
