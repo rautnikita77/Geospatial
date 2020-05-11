@@ -70,7 +70,7 @@ def partition_probe(probe_dict, n):
 if __name__ == "__main__":
     data = 'data'
     n = 128
-    samples = 1000000
+    samples = 100000
     # link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo']
     probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
     # link_header = ['linkPVID', 'refNodeID', 'nrefNodeID', 'length', 'functionalClass', 'directionOfTravel', 'speedCategory',

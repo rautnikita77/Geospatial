@@ -2,23 +2,25 @@ import os
 import math
 import random
 import pandas as pd
-from Slope_Estimation.utils import gps_to_ecef_pyproj
+from Slope_Estimation.utils import gps_to_ecef_pyproj, load_pickle, Metadata
 from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
 
 
 data = 'data'
 
-link_dict, probe_dict = {}, {}
+link_dict = {}
 
 cov_constant = 1
 err = 0 * cov_constant
 lane_width = 3.75
+n = 128             # Number of divisions for each axis
 
 
 def find_candidate_points(link_data):
-    global link_dict, probe_dict
+    global link_dict
 
+    germany = Metadata(n)
     candidates = []
     flag = 0
     equ = lambda x, y, xp, yp, m: (yp - y) - m*(xp - x)
@@ -32,11 +34,10 @@ def find_candidate_points(link_data):
         link_dict[index]['fromRefNumLanes'] = row.fromRefNumLanes
         link_dict[index]['subLinks'] = {}
         points = [(x.split('/')) for x in row.shapeInfo.split('|')]
-        # print(points)
-        for i in range(len(points)-1):          # for each sub-link
-            sub_link_dict = {}                  # {co-ordinates, theta, candidates}
-            s = gps_to_ecef_pyproj(list(map(float, points[i][:2])))
-            e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
+        for point_idx in range(len(points)-1):          # for each sub-link
+            sub_link_dict = {}                          # {co-ordinates, theta, candidates}
+            s = gps_to_ecef_pyproj(list(map(float, points[point_idx][:2])))
+            e = gps_to_ecef_pyproj(list(map(float, points[point_idx + 1][:2])))
 
             if e[1] > s[1]:
                 s, e = e, s
@@ -50,9 +51,12 @@ def find_candidate_points(link_data):
             (x2, y2) = (e[0] - d2*math.sin(theta)*cov_constant - (err*math.sin(theta)/abs(math.sin(theta))),
                         e[1] + d2*math.cos(theta)*cov_constant + (err*math.cos(theta)/abs(math.cos(theta))))
 
-            print(x1, y1, x2, y2)
+            i = (s[0] - germany.x1) // germany.d_x             # row number for nxn grid
+            j = (s[1] - germany.y2) // germany.d_y             # col number for nxn grid
+            zone = (n * j) + i
+            sub_link_dict['zone'] = zone
 
-            sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
+            sub_link_dict['co-ordinates'] = [s, e]          # will overwrite each time
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
 
@@ -75,7 +79,7 @@ def find_candidate_points(link_data):
             print('candidates', len(sub_link_dict['candidates']))
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'], probe_dict = refine_points(sub_link_dict, probe_dict, link_dict[index])
-            link_dict[index]['subLinks'][i] = sub_link_dict
+            link_dict[index]['subLinks'][point_idx] = sub_link_dict
 
             altitude = []
             if len(sub_link_dict['candidates']) not in [0, 1]:
@@ -97,52 +101,23 @@ def find_candidate_points(link_data):
     return candidates, link_dict
 
 
-def partition_data(probe_dict, link_data):
-    n = 2
-    coordinates = get_bounding_box_coordinates(n, probe_dict, link_data)
-    probe_dicts, link_dataframes = {x: [] for x in range(n*n)}, []
-
-    (x1, y1), (x2, y2) = coordinates
-    x1, y1 = 53.207633, 7.215272
-    x2, y2 = 47.727688, 15.064739
-    dx = abs((x2 - x1) / n)
-    dy = abs((y1 - y2) / n)
-
-    for n, probe in probe_dict:
-        x, y = gps_to_ecef_pyproj([probe['latitude'], probe_dict['longitude']])
-
-        i = (x - x1) // dx
-        j = (y - y2) // dy
-
-        dict_index = (n * j) + i
-
-        probe_dicts[dict_index].append(probe)
-
-    # for zone, coordinates in bounding_box_dict.items():
-    #     (x1, y1), (x2, y2) = coordinates
-
-
 def main():
     global link_dict, probe_dict
     link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo']
-    probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
+    # probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
     link_header = ['linkPVID', 'refNodeID', 'nrefNodeID', 'length', 'functionalClass', 'directionOfTravel', 'speedCategory',
                    'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'multiDigitized', 'urban',
                    'timeZone', 'shapeInfo', 'curvatureInfo', 'slopeInfo']
-    probe_header = ['sampleID', 'dateTime', 'sourceCode', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
+    # probe_header = ['sampleID', 'dateTime', 'sourceCode', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
     link_data = pd.read_csv(os.path.join(data, 'Partition6467LinkData.csv'), names=link_header, usecols=link_cols,
                             index_col='linkPVID')
-    probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
+    # probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    probe_dict = probe_data.sample(n=10000).to_dict('index')
+    # probe_dict = probe_data.sample(n=10000).to_dict('index')
     # probe_dict = probe_data[:1000].to_dict('index')
-    # Create 16 parts of data. One probe_dict and one link_data dataframe for each part
-    # For each part
-    # find_candidate_points(probe_dict[i], link_data[i])
 
-    # probe_dicts, link_dataframes = partition_data(probe_dict, link_data)
-    # print(link_data)
-    candidates, link_dict = find_candidate_points(link_data.iloc[0:1])
+    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones.pkl'))
+    candidates, link_dict = find_candidate_points(link_data.iloc[0:1], probe_dict)
 
 
 if __name__ == '__main__':

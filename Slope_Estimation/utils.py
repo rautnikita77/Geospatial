@@ -6,6 +6,7 @@ from tqdm import tqdm
 import pickle
 # 3727482.4232750153 4837909.841133979 4002608.377697181 5067892.186070938 = x_min, y_min, x_max, y_max
 
+
 def plot_lat_long_points(points):
     # for lat, long in points:
     print(points)
@@ -80,6 +81,26 @@ def slope_using_two_points(x1, x2, y1, y2):
 def save_pickle(data, file):
     with open(file, 'wb') as f:
         pickle.dump(data, f)
+
+
+def load_pickle(file):
+    with open('parrot.pkl', 'rb') as f:
+        data = pickle.load(f)
+    return data
+
+
+class Metadata:
+    def __init__(self, n):
+        """
+        Metadata for location where the data comes from
+        Args:
+            n (int): number on grids per axis in which data is divided into
+        """
+        self.n = n
+        self.x1, self.y1 = 3727482.4232750153, 5067892.186070938        # x_min, y_min
+        self.x2, self.y2 = 4002608.377697181, 4837909.841133979         # x_max, y_max
+        self.d_x = abs((self.x2 - self.x1) / n)
+        self.d_y = abs((self.y1 - self.y2) / n)
 
 # if __name__ == "__main__":
 #     data = 'data'
