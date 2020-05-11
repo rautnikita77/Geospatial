@@ -48,6 +48,9 @@ def refine_points(sub_link_dict, probe_dict, link_dict):
                 candidate_type_count[probe_dict[p]['sampleID']] = 1
 
     candidate_points = np.delete(candidate_points, points_to_remove)
+
+    if len(candidate_points) == 0:
+        return candidate_points
     threshold = np.quantile(np.array(list(candidate_type_count.values())), 0.75) / 2
 
     points_to_remove = []
@@ -56,9 +59,9 @@ def refine_points(sub_link_dict, probe_dict, link_dict):
             points_to_remove.append(p)
     candidate_points = np.delete(candidate_points, points_to_remove)
 
-    probe_dict = delete_keys_dict(probe_dict, candidate_points)
+    # probe_dict = delete_keys_dict(probe_dict, candidate_points)
 
-    return candidate_points, probe_dict
+    return candidate_points
 
 
 if __name__ == "__main__":

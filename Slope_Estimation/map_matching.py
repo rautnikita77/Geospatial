@@ -2,9 +2,11 @@ import os
 import math
 import random
 import pandas as pd
-from Slope_Estimation.utils import gps_to_ecef_pyproj, load_pickle, Metadata
+from Slope_Estimation.utils import gps_to_ecef_pyproj, load_pickle, Metadata, delete_keys_dict, slope_using_two_points, slope_using_points_and_altitude
 from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
+import numpy as np
+from sklearn.metrics import r2_score
 
 
 data = 'data'
@@ -20,13 +22,18 @@ n = 128             # Number of divisions for each axis
 def find_candidate_points(link_data, probe_dict):
     global link_dict
 
+    slope = []
+    ground_truth = []
     germany = Metadata(n)
-    candidates = []
     flag = 0
     equ = lambda x, y, xp, yp, m: (yp - y) - m*(xp - x)
-    alt = lambda h1, h2, x1, y1, x2, y2: math.tan(math.asin(abs(h1-h2)/((x1 - x2)**2 + (y1-y2)**2)**(1/2)))
-    for index, row in (link_data.iterrows()):
+    pbar = tqdm(total=len(link_data.index))
+    for index, row in link_data.iterrows():
+        if row.slopeInfo != row.slopeInfo:
+            pbar.update(1)
+            continue
         link_slope = 0
+        denominator = 0
         link_dict[index] = {}                   # {toRefSpeedLimit, fromRefSpeedLimit....., subLinks}
         link_dict[index]['toRefSpeedLimit'] = row.toRefSpeedLimit
         link_dict[index]['fromRefSpeedLimit'] = row.fromRefSpeedLimit
@@ -60,7 +67,7 @@ def find_candidate_points(link_data, probe_dict):
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
 
-            for index1, probe in tqdm(probe_dict[zone].items()):
+            for index1, probe in probe_dict[zone].items():
 
                 x, y = probe['co-ordinates']
 
@@ -71,49 +78,49 @@ def find_candidate_points(link_data, probe_dict):
 
                     sub_link_dict['candidates'].append(index1)
 
-            print('candidates', len(sub_link_dict['candidates']))
-            print('Zone:', zone)
             if sub_link_dict['candidates']:
-                sub_link_dict['candidates'], probe_dict[zone] = refine_points(sub_link_dict, probe_dict[zone], link_dict[index])
+                sub_link_dict['candidates'] = refine_points(sub_link_dict, probe_dict[zone], link_dict[index])
             link_dict[index]['subLinks'][point_idx] = sub_link_dict
 
-            altitude = []
+            slopes = []
             if len(sub_link_dict['candidates']) not in [0, 1]:
-                for j in range(5):
-                    a, b = random.sample(sub_link_dict['candidates'], 2)
-
-                    altitude.append(alt(probe_dict[a]['altitude'], probe_dict[b]['altitude'],
-                                        probe_dict[a]['co-ordinates'][0], probe_dict[a]['co-ordinates'][1],
-                                        probe_dict[b]['co-ordinates'][0], probe_dict[b]['co-ordinates'][1]))
-
+                for _ in range(5):
+                    a, b = random.sample(list(sub_link_dict['candidates']), 2)
+                    try:
+                        slopes.append(slope_using_points_and_altitude(probe_dict[zone][a]['altitude'], probe_dict[zone][b]['altitude'],
+                                            probe_dict[zone][a]['co-ordinates'][0], probe_dict[zone][a]['co-ordinates'][1],
+                                            probe_dict[zone][b]['co-ordinates'][0], probe_dict[zone][b]['co-ordinates'][1]))
+                    except ValueError:
+                        pass
                 [(x1, y1), (x2, y2)] = sub_link_dict['co-ordinates']
-                link_slope += ((x1 - x2)**2 + (y1 - y2)**2)**(1/2) * sum(altitude) / len(altitude)
+                if slopes:
+                    link_slope += ((x1 - x2)**2 + (y1 - y2)**2)**(1/2) * sum(slopes) / len(slopes)
+                    denominator += ((x1 - x2)**2 + (y1 - y2)**2)**(1/2)
 
-            else:
-                link_slope += -1
-            print(sub_link_dict['candidates'])
-        link_dict[index]['slope'] = link_slope
-
-    return candidates, link_dict
+            probe_dict[zone] = delete_keys_dict(probe_dict[zone], sub_link_dict['candidates'])
+        if denominator != 0:
+            link_dict[index]['slope'] = link_slope / denominator
+            slope.append(link_dict[index]['slope'])
+            ground_truth_link = [float(x.split('/')[1]) for x in row.slopeInfo.split('|')]
+            ground_truth.append(sum(ground_truth_link) / len(ground_truth_link))
+        pbar.update(1)
+    pbar.close()
+    print(r2_score(ground_truth, slope))
+    return link_dict
 
 
 def main():
     global link_dict, probe_dict
-    link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo']
-    # probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
+    link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo', 'slopeInfo']
     link_header = ['linkPVID', 'refNodeID', 'nrefNodeID', 'length', 'functionalClass', 'directionOfTravel', 'speedCategory',
                    'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'multiDigitized', 'urban',
                    'timeZone', 'shapeInfo', 'curvatureInfo', 'slopeInfo']
-    # probe_header = ['sampleID', 'dateTime', 'sourceCode', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
     link_data = pd.read_csv(os.path.join(data, 'Partition6467LinkData.csv'), names=link_header, usecols=link_cols,
                             index_col='linkPVID')
-    # probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    # probe_dict = probe_data.sample(n=10000).to_dict('index')
-    # probe_dict = probe_data[:1000].to_dict('index')
+    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_1000000_samples.pkl'))
+    link_dict = find_candidate_points(link_data.iloc, probe_dict)
 
-    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_10000_samples.pkl'))
-    candidates, link_dict = find_candidate_points(link_data.iloc[0:1], probe_dict)
 
 
 if __name__ == '__main__':

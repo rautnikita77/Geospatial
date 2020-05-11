@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 import pyproj
-import pandas as pd
+import math
 from tqdm import tqdm
 import pickle
 # 3727482.4232750153 4837909.841133979 4002608.377697181 5067892.186070938 = x_min, y_min, x_max, y_max
@@ -75,7 +75,22 @@ def delete_keys_dict(dict_, keys):
 
 
 def slope_using_two_points(x1, x2, y1, y2):
-    return (y1 - y2) / (x1 - x2)
+    try:
+        return (float(y1) - float(y2)) / (float(x1) - float(x2))
+    except ZeroDivisionError:
+        return 99999
+
+
+def slope_using_points_and_altitude(h1, h2, x1, y1, x2, y2):
+    if h1 != h2:
+        sign = (h2 - h1) / abs(h2 - h1)
+    else:
+        sign = 1
+    d = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** (1 / 2)
+    try:
+        return sign * math.tan(math.asin(abs(h1 - h2) / d))
+    except ZeroDivisionError:
+        return sign * math.tan(math.asin(abs(h1 - h2) / 0.1))
 
 
 def save_pickle(data, file):
