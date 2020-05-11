@@ -84,7 +84,7 @@ def save_pickle(data, file):
 
 
 def load_pickle(file):
-    with open('parrot.pkl', 'rb') as f:
+    with open(file, 'rb') as f:
         data = pickle.load(f)
     return data
 

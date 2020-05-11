@@ -56,7 +56,7 @@ def find_candidate_points(link_data):
             zone = (n * j) + i
             sub_link_dict['zone'] = zone
 
-            sub_link_dict['co-ordinates'] = [s, e]          # will overwrite each time
+            sub_link_dict['co-ordinates'] = [s, e]
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
 
