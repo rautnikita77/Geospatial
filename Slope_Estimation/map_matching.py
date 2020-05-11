@@ -72,7 +72,7 @@ def find_candidate_points(link_data, probe_dict):
                     sub_link_dict['candidates'].append(index1)
 
             print('candidates', len(sub_link_dict['candidates']))
-            print('Zone')
+            print('Zone:', zone)
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'], probe_dict = refine_points(sub_link_dict, probe_dict, link_dict[index])
             link_dict[index]['subLinks'][point_idx] = sub_link_dict

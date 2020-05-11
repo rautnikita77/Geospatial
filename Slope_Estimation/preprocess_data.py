@@ -15,7 +15,7 @@ def partition_probe(probe_dict, n):
     Returns:
         probe_dicts: Dictionary of probes zone wise
     """
-    probe_dicts = {x: [] for x in range(n*n)}
+    probe_dicts = {x: {} for x in range(n*n)}
 
     for key, probe in tqdm(probe_dict.items()):
         x, y, z = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
@@ -24,7 +24,7 @@ def partition_probe(probe_dict, n):
         dict_index = (n * j) + i
         probe['zone'] = dict_index
         probe['co-ordinates'] = (x, y)
-        probe_dicts[dict_index].append(probe)
+        probe_dicts[dict_index][key] = probe
 
     sum_ = 0
     for x, y in probe_dicts.items():
@@ -66,7 +66,7 @@ def partition_probe(probe_dict, n):
 if __name__ == "__main__":
     data = 'data'
     n = 128
-    samples = 100000
+    samples = 10000
 
     germany = Metadata(n)
 
