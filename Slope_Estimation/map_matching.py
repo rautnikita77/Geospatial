@@ -119,7 +119,7 @@ def main():
                             index_col='linkPVID')
 
     probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_1000000_samples.pkl'))
-    link_dict = find_candidate_points(link_data.iloc, probe_dict)
+    link_dict = find_candidate_points(link_data, probe_dict)
 
 
 
