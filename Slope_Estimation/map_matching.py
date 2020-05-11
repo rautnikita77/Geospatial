@@ -17,7 +17,7 @@ lane_width = 3.75
 n = 128             # Number of divisions for each axis
 
 
-def find_candidate_points(link_data):
+def find_candidate_points(link_data, probe_dict):
     global link_dict
 
     germany = Metadata(n)
@@ -60,14 +60,15 @@ def find_candidate_points(link_data):
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
 
-            for index1, probe in tqdm(probe_dict.items()):
+            for index1, probe in enumerate(tqdm(probe_dict[zone])):
 
-                (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
+                # (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
+                #
+                # if flag == 0:
+                #     probe['co-ordinates'] = (x, y)
+                #     probe['altitude'] = z
 
-
-                if flag == 0:
-                    probe_dict[index1]['co-ordinates'] = (x, y)
-                    probe_dict[index1]['altitude'] = z
+                x, y = probe['co-ordinates']
 
                 if equ(x1, y1, x, y, math.tan(theta)) >= 0 \
                         and equ(x1, y1, x, y, math.tan(math.atan(-1/m))) <= 0 \
@@ -75,7 +76,7 @@ def find_candidate_points(link_data):
                         and equ(x2, y2, x, y, math.tan(math.atan(-1/m))) >= 0:
 
                     sub_link_dict['candidates'].append(index1)
-            flag = 1
+            # flag = 1
             print('candidates', len(sub_link_dict['candidates']))
             if sub_link_dict['candidates']:
                 sub_link_dict['candidates'], probe_dict = refine_points(sub_link_dict, probe_dict, link_dict[index])
@@ -116,7 +117,7 @@ def main():
     # probe_dict = probe_data.sample(n=10000).to_dict('index')
     # probe_dict = probe_data[:1000].to_dict('index')
 
-    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones.pkl'))
+    probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_100000_samples.pkl'))
     candidates, link_dict = find_candidate_points(link_data.iloc[0:1], probe_dict)
 
 

@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from Slope_Estimation.utils import gps_to_ecef_pyproj, save_pickle
+from Slope_Estimation.utils import gps_to_ecef_pyproj, save_pickle, Metadata
 from tqdm import tqdm
 import os
 
@@ -17,17 +17,13 @@ def partition_probe(probe_dict, n):
     """
     probe_dicts = {x: [] for x in range(n*n)}
 
-    x1, y1 = 3727482.4232750153, 5067892.186070938
-    x2, y2 = 4002608.377697181, 4837909.841133979
-    dx = abs((x2 - x1) / n)
-    dy = abs((y1 - y2) / n)
-
     for key, probe in tqdm(probe_dict.items()):
-        x, y = gps_to_ecef_pyproj([probe['latitude'], probe['longitude']])
-        i = (x - x1) // dx
-        j = (y - y2) // dy
+        x, y, z = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
+        i = (x - germany.x1) // germany.d_x         # row number for nxn grid
+        j = (y - germany.y2) // germany.d_y         # col number for nxn grid
         dict_index = (n * j) + i
         probe['zone'] = dict_index
+        probe['co-ordinates'] = (x, y)
         probe_dicts[dict_index].append(probe)
 
     sum_ = 0
@@ -70,7 +66,10 @@ def partition_probe(probe_dict, n):
 if __name__ == "__main__":
     data = 'data'
     n = 128
-    samples = 1000000
+    samples = 100000
+
+    germany = Metadata(n)
+
     # link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo']
     probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
     # link_header = ['linkPVID', 'refNodeID', 'nrefNodeID', 'length', 'functionalClass', 'directionOfTravel', 'speedCategory',
@@ -85,4 +84,4 @@ if __name__ == "__main__":
     # link_dataframe = partition_link(link_data)
     probe_dicts = partition_probe(probe_dict, n)
 
-    save_pickle(probe_dict, os.path.join(data, 'probe_dict_{}_zones_{}_samples.pkl'.format(str(n), str(samples))))
+    save_pickle(probe_dicts, os.path.join(data, 'probe_dict_{}_zones_{}_samples.pkl'.format(str(n), str(samples))))
