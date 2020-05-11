@@ -13,6 +13,7 @@ link_dict, probe_dict = {}, {}
 
 cov_constant = 1
 err = 0 * cov_constant
+lane_width = 3.75
 
 
 def find_candidate_points(link_data):
@@ -36,18 +37,14 @@ def find_candidate_points(link_data):
             sub_link_dict = {}                  # {co-ordinates, theta, candidates}
             s = gps_to_ecef_pyproj(list(map(float, points[i][:2])))
             e = gps_to_ecef_pyproj(list(map(float, points[i + 1][:2])))
-            s = (2, 1)
-            e = (1, 2)
+
+            if e[1] > s[1]:
+                s, e = e, s
             m = (s[1] - e[1]) / (s[0] - e[0])
             theta = math.atan(m)  # in radians
 
-            print(m)
-            print(theta)
+            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 20)*lane_width, int(link_dict[index]['fromRefSpeedLimit'] + 20)*lane_width)
 
-            # print(link_dict[index]['toRefNumLanes'], link_dict[index]['fromRefSpeedLimit'])
-            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 20)*2, int(link_dict[index]['fromRefSpeedLimit'] + 20)*2)
-            (d1, d2) = (1,1)
-            # print(math.sin(math.radians(theta)))
             (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + (err*math.sin(theta)/abs(math.sin(theta))),
                         s[1] - d1*math.cos(theta)*cov_constant - (err*math.cos(theta)/abs(math.cos(theta))))
             (x2, y2) = (e[0] - d2*math.sin(theta)*cov_constant - (err*math.sin(theta)/abs(math.sin(theta))),
@@ -58,12 +55,11 @@ def find_candidate_points(link_data):
             sub_link_dict['co-ordinates'] = [s, e]       # will overwrite each time
             sub_link_dict['theta'] = theta
             sub_link_dict['candidates'] = []
-            # print(sub_link_dict['co-ordinates'])
+
             for index1, probe in tqdm(probe_dict.items()):
 
                 (x, y, z) = gps_to_ecef_pyproj([probe['latitude'], probe['longitude'], probe['altitude']])
-                x = (s[0] + e[0])/2
-                y = (s[1] + e[1])/2
+
 
                 if flag == 0:
                     probe_dict[index1]['co-ordinates'] = (x, y)
@@ -73,7 +69,7 @@ def find_candidate_points(link_data):
                         and equ(x1, y1, x, y, math.tan(math.atan(-1/m))) <= 0 \
                         and equ(x2, y2, x, y, math.tan(theta)) <= 0 \
                         and equ(x2, y2, x, y, math.tan(math.atan(-1/m))) >= 0:
-                    # print('a')
+
                     sub_link_dict['candidates'].append(index1)
             flag = 1
             print('candidates', len(sub_link_dict['candidates']))
@@ -138,8 +134,8 @@ def main():
                             index_col='linkPVID')
     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
 
-    # probe_dict = probe_data.sample(n=1000).to_dict('index')
-    probe_dict = probe_data[:1000].to_dict('index')
+    probe_dict = probe_data.sample(n=10000).to_dict('index')
+    # probe_dict = probe_data[:1000].to_dict('index')
     # Create 16 parts of data. One probe_dict and one link_data dataframe for each part
     # For each part
     # find_candidate_points(probe_dict[i], link_data[i])
