@@ -4,18 +4,29 @@ import pyproj
 import math
 from tqdm import tqdm
 import pickle
-# 3727482.4232750153 4837909.841133979 4002608.377697181 5067892.186070938 = x_min, y_min, x_max, y_max
 
 
 def plot_lat_long_points(points):
-    # for lat, long in points:
-    print(points)
+    """
+    Plot given lat long points
+    Args:
+        points (list): points
+    """
     plt.scatter(x=[x[0] for x in points], y=[x[1] for x in points])
     plt.plot(points[0], points[-1])
     plt.show()
 
 
 def gps_to_ecef_pyproj(lat_long_alt):
+    """
+    Convert gps lat long alt coordinates to ecef
+    Args:
+        lat_long_alt (list): lat, long, alt
+
+    Returns:
+        x, y, z: ecef coordinates
+
+    """
     if len(lat_long_alt) == 3:
         ecef = pyproj.Proj(proj='geocent', ellps='WGS84', datum='WGS84')
         lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
@@ -75,6 +86,17 @@ def delete_keys_dict(dict_, keys):
 
 
 def slope_using_two_points(x1, x2, y1, y2):
+    """
+    Get slope using two point form
+    Args:
+        x1:
+        x2:
+        y1:
+        y2:
+
+    Returns:
+        slope
+    """
     try:
         return (float(y1) - float(y2)) / (float(x1) - float(x2))
     except ZeroDivisionError:
@@ -82,6 +104,19 @@ def slope_using_two_points(x1, x2, y1, y2):
 
 
 def slope_using_points_and_altitude(h1, h2, x1, y1, x2, y2):
+    """
+    Get slope using two points at given altitude
+    Args:
+        h1: alt 1
+        h2: alt 2
+        x1:
+        y1:
+        x2:
+        y2:
+
+    Returns:
+        slope
+    """
     if h1 != h2:
         sign = (h2 - h1) / abs(h2 - h1)
     else:
@@ -117,19 +152,3 @@ class Metadata:
         self.d_x = abs((self.x2 - self.x1) / n)
         self.d_y = abs((self.y1 - self.y2) / n)
 
-# if __name__ == "__main__":
-#     data = 'data'
-#     link_cols = ['linkPVID', 'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'shapeInfo']
-#     probe_cols = ['sampleID', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
-#     link_header = ['linkPVID', 'refNodeID', 'nrefNodeID', 'length', 'functionalClass', 'directionOfTravel',
-#                    'speedCategory',
-#                    'fromRefSpeedLimit', 'toRefSpeedLimit', 'fromRefNumLanes', 'toRefNumLanes', 'multiDigitized',
-#                    'urban',
-#                    'timeZone', 'shapeInfo', 'curvatureInfo', 'slopeInfo']
-#     probe_header = ['sampleID', 'dateTime', 'sourceCode', 'latitude', 'longitude', 'altitude', 'speed', 'heading']
-#     link_data = pd.read_csv(os.path.join(data, 'Partition6467LinkData.csv'), names=link_header, usecols=link_cols,
-#                             index_col='linkPVID')
-#     probe_data = pd.read_csv(os.path.join(data, 'Partition6467ProbePoints.csv'), names=probe_header, usecols=probe_cols)
-#
-#     probe_dict = probe_data.sample(n=100).to_dict('index')
-#     get_bounding_box_coordinates(4, probe_dict, link_data)

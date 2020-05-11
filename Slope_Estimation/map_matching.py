@@ -2,16 +2,13 @@ import os
 import math
 import random
 import pandas as pd
-from Slope_Estimation.utils import gps_to_ecef_pyproj, load_pickle, Metadata, delete_keys_dict, slope_using_two_points, slope_using_points_and_altitude
+from Slope_Estimation.utils import gps_to_ecef_pyproj, load_pickle, Metadata, delete_keys_dict, slope_using_points_and_altitude
 from Slope_Estimation.refine import refine_points
 from tqdm import tqdm
-import numpy as np
 from sklearn.metrics import r2_score
 
 
 data = 'data'
-
-link_dict = {}
 
 cov_constant = 1
 err = 0 * cov_constant
@@ -20,12 +17,19 @@ n = 128             # Number of divisions for each axis
 
 
 def find_candidate_points(link_data, probe_dict):
-    global link_dict
+    """
+    Find candidate points for all the links
+    Args:
+        link_data (dataframe): Link dataframe
+        probe_dict (dict): Provbe data divided into zones
 
+    Returns:
+        link_dict
+    """
+    link_dict = {}
     slope = []
     ground_truth = []
     germany = Metadata(n)
-    flag = 0
     equ = lambda x, y, xp, yp, m: (yp - y) - m*(xp - x)
     pbar = tqdm(total=len(link_data.index))
     for index, row in link_data.iterrows():
@@ -51,7 +55,8 @@ def find_candidate_points(link_data, probe_dict):
             m = (s[1] - e[1]) / (s[0] - e[0])
             theta = math.atan(m)  # in radians
 
-            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 20)*lane_width, int(link_dict[index]['fromRefSpeedLimit'] + 20)*lane_width)
+            (d1, d2) = (int(link_dict[index]['toRefNumLanes'] + 20)*lane_width,
+                        int(link_dict[index]['fromRefSpeedLimit'] + 20)*lane_width)
 
             (x1, y1) = (s[0] + d1*math.sin(theta)*cov_constant + (err*math.sin(theta)/abs(math.sin(theta))),
                         s[1] - d1*math.cos(theta)*cov_constant - (err*math.cos(theta)/abs(math.cos(theta))))
@@ -87,9 +92,12 @@ def find_candidate_points(link_data, probe_dict):
                 for _ in range(5):
                     a, b = random.sample(list(sub_link_dict['candidates']), 2)
                     try:
-                        slopes.append(slope_using_points_and_altitude(probe_dict[zone][a]['altitude'], probe_dict[zone][b]['altitude'],
-                                            probe_dict[zone][a]['co-ordinates'][0], probe_dict[zone][a]['co-ordinates'][1],
-                                            probe_dict[zone][b]['co-ordinates'][0], probe_dict[zone][b]['co-ordinates'][1]))
+                        slopes.append(slope_using_points_and_altitude(probe_dict[zone][a]['altitude'],
+                                                                      probe_dict[zone][b]['altitude'],
+                                                                      probe_dict[zone][a]['co-ordinates'][0],
+                                                                      probe_dict[zone][a]['co-ordinates'][1],
+                                                                      probe_dict[zone][b]['co-ordinates'][0],
+                                                                      probe_dict[zone][b]['co-ordinates'][1]))
                     except ValueError:
                         pass
                 [(x1, y1), (x2, y2)] = sub_link_dict['co-ordinates']
@@ -120,7 +128,6 @@ def main():
 
     probe_dict = load_pickle(os.path.join(data, 'probe_dict_128_zones_1000000_samples.pkl'))
     link_dict = find_candidate_points(link_data, probe_dict)
-
 
 
 if __name__ == '__main__':
