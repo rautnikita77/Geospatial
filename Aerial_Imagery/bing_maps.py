@@ -16,11 +16,12 @@ def get_bing_map(min_lat, max_lat, min_lon, max_lon):
 
     """
     key = "AgVkIXYlkkwD-wKoY9IQDYy1bvLHiAaWC2ZI_LewXAfPxf-IYQeE_PLu3A9Z4ZxA"
-    BASEURL = "https://dev.virtualearth.net/REST/V1/Imagery/Map/Aerial/?mapArea={},{},{},{}&key={}"\
+    BASEURL = "https://dev.virtualearth.net/REST/V1/Imagery/Map/Aerial/?mapArea={},{},{},{}&mapSize=2000,1500&key={}"\
         .format(str(min_lat), str(max_lat), str(min_lon), str(max_lon), key)
 
     with request.urlopen(BASEURL) as file:
         a = Image.open(file)
+    print(a)
     a.show()
     return a
 
