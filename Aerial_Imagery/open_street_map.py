@@ -16,7 +16,7 @@ def get_nodes(min_lat=42.051208, min_lon=-87.676717, max_lat=42.057412, max_lon=
     return roads
 
 
-(x1, y1), (x2, y2) = gps_to_ecef_pyproj([42.051208, 87.676717]), gps_to_ecef_pyproj([42.057412, 87.668984])
+(x1, y1), (x2, y2) = gps_to_ecef_pyproj([42.051208, -87.676717]), gps_to_ecef_pyproj([42.057412, -87.668984])
 x_min = min(x1, x2)
 y_min = min(y1, y2)
 x_max = max(x1, x2)
