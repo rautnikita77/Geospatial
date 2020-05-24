@@ -74,6 +74,6 @@ def rotate_coordinates(x, y, z, alpha, beta, gamma, degree=True):
     R = np.array([[cos(alpha)*cos(beta), cos(alpha)*sin(beta)*sin(gamma) - sin(alpha)*cos(gamma), cos(alpha)*sin(beta)*cos(gamma) + sin(alpha)*sin(gamma)],
                   [sin(alpha)*cos(beta), sin(alpha)*sin(beta)*sin(gamma) + cos(alpha)*cos(gamma), sin(alpha)*sin(beta)*cos(gamma) - cos(alpha)*sin(gamma)],
                   [-sin(beta), cos(beta)*sin(gamma), cos(beta)*cos(gamma)]])
-    [x, y, z] = np.dot(R, np.array([x], [y], [z]))
+    [x, y, z] = np.dot(R, np.array([[x], [y], [z]]))
     return x, y, z
 
