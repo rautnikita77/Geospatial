@@ -53,6 +53,22 @@ def cam2image(x, y, z, Rs):
 
 
 def rotate_coordinates(x, y, z, alpha, beta, gamma, degree=True):
+    """
+    Rotate given coordinates by angles along all axes
+    Args:
+        x (float): x coordinate
+        y (float): y coordinate
+        z (float): z coordinate
+        alpha (float): Rotation along x axis
+        beta (float): Rotation along y axis
+        gamma (float): Rotation along z axis
+        degree (bool): True if angles in degree
+
+    Returns:
+        x (float): x coordinate after rotation
+        y (float): y coordinate after rotation
+        z (float): z coordinate after rotation
+    """
     if degree:
         alpha, beta, gamma = [math.radians(x) for x in [alpha, beta, gamma]]
     R = np.array([[cos(alpha)*cos(beta), cos(alpha)*sin(beta)*sin(gamma) - sin(alpha)*cos(gamma), cos(alpha)*sin(beta)*cos(gamma) + sin(alpha)*sin(gamma)],
