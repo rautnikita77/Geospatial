@@ -1,6 +1,7 @@
 import numpy as np
 from math import cos, sin, radians
 import pymap3d as pm
+import math
 
 
 def lla2ecef(lat, lon, alt):
@@ -49,4 +50,14 @@ def cam2image(x, y, z, Rs):
         yi = (x/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
         return xi, yi
     return
+
+
+def rotate_coordinates(x, y, z, alpha, beta, gamma, degree=True):
+    if degree:
+        alpha, beta, gamma = [math.radians(x) for x in [alpha, beta, gamma]]
+    R = np.array([[cos(alpha)*cos(beta), cos(alpha)*sin(beta)*sin(gamma) - sin(alpha)*cos(gamma), cos(alpha)*sin(beta)*cos(gamma) + sin(alpha)*sin(gamma)],
+                  [sin(alpha)*cos(beta), sin(alpha)*sin(beta)*sin(gamma) + cos(alpha)*cos(gamma), sin(alpha)*sin(beta)*cos(gamma) - cos(alpha)*sin(gamma)],
+                  [-sin(beta), cos(beta)*sin(gamma), cos(beta)*cos(gamma)]])
+    [x, y, z] = np.dot(R, np.array([x], [y], [z]))
+    return x, y, z
 
