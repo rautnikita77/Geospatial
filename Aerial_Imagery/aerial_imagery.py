@@ -1,15 +1,19 @@
+import sys, io, os
 from urllib import request
 from PIL import Image
 import os
+from math import cos, sin, pi, log, atan, exp, floor
 import math
 from itertools import chain
 import re
 
+# 40.792801, -73.967553, 40.775645, -73.960642
+
 BASEURL = 'http://ecn.t0.tiles.virtualearth.net/tiles/a{}.jpeg?g=8549'
-min_lat = 42.051208
-min_lon = -87.676717
-max_lat = 42.057412
-max_lon = -87.668984
+min_lat = 41.885108
+min_lon = -87.615195
+max_lat = 41.893812
+max_lon = -87.597778
 IMAGEMAXSIZE = 8192 * 8192 * 8  # max width/height in pixels for the retrived image
 TILESIZE = 256  # in Bing tile system, one tile image is in size 256 * 256 pixels
 
@@ -20,32 +24,32 @@ class TileSystem:
         self.EarthRadius = 6378137
         self.MinLatitude, self.MaxLatitude = -85.05112878, 85.05112878
         self.MinLongitude, self.MaxLongitude = -180., 180.
-        self.MaxLevel = 23
+        self.MaxLevel = 20
 
-    def clip(self, value, minValue, maxValue):
-        return min(max(value, minValue), maxValue)
+    def clip(self, val, minval, maxval):
+        return min(max(val, minval), maxval)
 
     def map_size(self, level):
         return 256 << level
 
-    def ground_resolution(self, latitude, level):
-        latitude = self.clip(latitude, self.MinLatitude, self.MaxLatitude)
-        return math.cos(latitude * math.pi / 180) * 2 * math.pi * self.EarthRadius / self.map_size(level)
+    def ground_resolution(self, lat, level):
+        lat = self.clip(lat, self.MinLatitude, self.MaxLatitude)
+        return cos(lat * pi / 180) * 2 * pi * self.EarthRadius / self.map_size(level)
 
-    def map_scale(self, latitude, level, screenDpi):
-        return self.ground_resolution(latitude, level) * screenDpi / 0.0254
+    def map_scale(self, lat, level, screenDpi):
+        return self.ground_resolution(lat, level) * screenDpi / 0.0254
 
-    def latlong_to_pixelXY(self, latitude, longitude, level):
-        latitude = self.clip(latitude, self.MinLatitude, self.MaxLatitude)
-        longitude = self.clip(longitude, self.MinLongitude, self.MaxLongitude)
+    def latlong_to_pixelXY(self, lat, long, level):
+        lat = self.clip(lat, self.MinLatitude, self.MaxLatitude)
+        long = self.clip(long, self.MinLongitude, self.MaxLongitude)
 
-        x = (longitude + 180) / 360
-        sinLatitude = math.sin(latitude * math.pi / 180)
-        y = 0.5 - math.log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * math.pi)
+        x = (long + 180) / 360
+        sinlat = sin(lat * pi / 180)
+        y = 0.5 - log((1 + sinlat) / (1 - sinlat)) / (4 * pi)
 
         mapsize = self.map_size(level)
-        pixelX = int(self.clip(x * mapsize + 0.5, 0, mapsize - 1))
-        pixelY = int(self.clip(y * mapsize + 0.5, 0, mapsize - 1))
+        pixelX, pixelY = floor(self.clip(x * mapsize + 0.5, 0, mapsize - 1)), \
+                         floor(self.clip(y * mapsize + 0.5, 0, mapsize - 1))
         return pixelX, pixelY
 
     def pixelXY_to_latlong(self, pixelX, pixelY, level):
@@ -53,12 +57,12 @@ class TileSystem:
         x = self.clip(pixelX, 0, mapsize - 1) / mapsize - 0.5
         y = 0.5 - 360 * self.clip(pixelY, 0, mapsize - 1) / mapsize
 
-        latitude = 90 - 360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi
-        longitude = 360 * x
-        return latitude, longitude
+        lat = 90 - 360 * atan(exp(-y * 2 * pi)) / pi
+        long = 360 * x
+        return lat, long
 
     def pixelXY_to_tileXY(self, pixelX, pixelY):
-        return int(pixelX / 256), int(pixelY / 256)
+        return floor(pixelX / 256), floor(pixelY / 256)
 
     def tileXY_to_pixelXY(self, tileX, tileY):
         return tileX * 256, tileY * 256
