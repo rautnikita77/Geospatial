@@ -6,10 +6,10 @@ from itertools import chain
 import re
 
 BASEURL = 'http://ecn.t0.tiles.virtualearth.net/tiles/a{}.jpeg?g=8549'
-min_lat = 42.051208
-min_lon = -87.676717
-max_lat = 42.057412
-max_lon = -87.668984
+min_lat = 41.893812
+min_lon = -87.615195
+max_lat = 41.885108
+max_lon = -87.597778
 IMAGEMAXSIZE = 8192 * 8192 * 8  # max width/height in pixels for the retrived image
 TILESIZE = 256  # in Bing tile system, one tile image is in size 256 * 256 pixels
 
@@ -20,7 +20,7 @@ class TileSystem:
         self.EarthRadius = 6378137
         self.MinLatitude, self.MaxLatitude = -85.05112878, 85.05112878
         self.MinLongitude, self.MaxLongitude = -180., 180.
-        self.MaxLevel = 23
+        self.MaxLevel = 20
 
     def clip(self, value, minValue, maxValue):
         return min(max(value, minValue), maxValue)
@@ -127,6 +127,7 @@ def main():
         print("Finish the aerial image retrieval at", level)
         filename = os.path.join('images', 'aerialImage_{}.jpeg'.format(level))
         retrieve_image.save(filename)
+
 
 if __name__ == '__main__':
     tile_system = TileSystem()
