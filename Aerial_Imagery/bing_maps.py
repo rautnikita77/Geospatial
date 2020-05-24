@@ -4,14 +4,14 @@ import numpy as np
 
 
 # Defining the map boundaries 42.051208, min_lon=-87.676717, max_lat=42.057412, max_lon=
-north, east, south, west = 42.057412, -87.668984, 42.051208, -87.676717
+north, east, south, west = 41.893812,  -87.597778, 41.885108, -87.615195
 # Downloading the map as a graph object
 G = ox.graph_from_bbox(north, south, east, west, network_type='all', retain_all=True)
 # Plotting the map graph
-ox.plot_graph(G, node_size=0, bgcolor='white', save=True, edge_color='#FF0000')
+ox.plot_graph(G, node_size=0, bgcolor='black', save=True, edge_color='#FF0000')
 
 
-aerial = Image.open('images/aerialImage_20.jpeg')
+aerial = Image.open('images/aerialImage_19.jpeg')
 aerial = aerial.convert("RGBA")
 img = Image.open('images/temp.png')
 datas = img.getdata()
