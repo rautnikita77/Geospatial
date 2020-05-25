@@ -1,6 +1,6 @@
 import cv2
 import os
-from utils import plot_bounding_box, erode, apply_thresholding_img, dilate, median_blur, gaussian_blur, custom_median_filter
+from Smear_Detection.utils import plot_bounding_box, erode, apply_thresholding_img, dilate, median_blur, gaussian_blur, custom_median_filter
 import numpy as np
 
 

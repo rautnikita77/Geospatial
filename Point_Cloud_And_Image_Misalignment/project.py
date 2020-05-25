@@ -58,19 +58,19 @@ for point in points_right:
     right[point[0], point[1]] = point[2]
 
 
-cv2.imshow("a", front)
-cv2.waitKey(0)
-cv2.imshow("a", back)
-cv2.waitKey(0)
-cv2.imshow("a", left)
-cv2.waitKey(0)
-cv2.imshow("a", right)
-cv2.waitKey(0)
+# cv2.imshow("a", front)
+# cv2.waitKey(0)
+# cv2.imshow("a", back)
+# cv2.waitKey(0)
+# cv2.imshow("a", left)
+# cv2.waitKey(0)
+# cv2.imshow("a", right)
+# cv2.waitKey(0)
 
-cv2.imwrite("front.jpg", front)
-cv2.imwrite("back.jpg", back)
-cv2.imwrite("left.jpg", left)
-cv2.imwrite("right.jpg", right)
+cv2.imwrite(os.path.join(root, "projections/front.jpg"), front)
+cv2.imwrite(os.path.join(root, "projections/back.jpg"), back)
+cv2.imwrite(os.path.join(root, "projections/left.jpg"), left)
+cv2.imwrite(os.path.join(root, "projections/right.jpg"), right)
 
 
 
