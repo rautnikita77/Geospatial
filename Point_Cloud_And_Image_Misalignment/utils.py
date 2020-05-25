@@ -46,35 +46,11 @@ def enu2cam(e, n, u, qs, qx, qy, qz):
 
 
 def cam2image(x, y, z, Rs):
-    if z > 0 and z > abs(x) and z > abs(y):
-        xi = (y/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
-        yi = (x/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
-        return xi, yi
-    return
+
+    xi = (y/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
+    yi = (x/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
+    return xi, yi
 
 
-def rotate_coordinates(x, y, z, alpha, beta, gamma, degree=True):
-    """
-    Rotate given coordinates by angles along all axes
-    Args:
-        x (float): x coordinate
-        y (float): y coordinate
-        z (float): z coordinate
-        alpha (float): Rotation along x axis
-        beta (float): Rotation along y axis
-        gamma (float): Rotation along z axis
-        degree (bool): True if angles in degree
 
-    Returns:
-        x (float): x coordinate after rotation
-        y (float): y coordinate after rotation
-        z (float): z coordinate after rotation
-    """
-    if degree:
-        alpha, beta, gamma = [math.radians(x) for x in [alpha, beta, gamma]]
-    R = np.array([[cos(alpha)*cos(beta), cos(alpha)*sin(beta)*sin(gamma) - sin(alpha)*cos(gamma), cos(alpha)*sin(beta)*cos(gamma) + sin(alpha)*sin(gamma)],
-                  [sin(alpha)*cos(beta), sin(alpha)*sin(beta)*sin(gamma) + cos(alpha)*cos(gamma), sin(alpha)*sin(beta)*cos(gamma) - cos(alpha)*sin(gamma)],
-                  [-sin(beta), cos(beta)*sin(gamma), cos(beta)*cos(gamma)]])
-    [x, y, z] = np.dot(R, np.array([[x], [y], [z]]))
-    return x, y, z
 
