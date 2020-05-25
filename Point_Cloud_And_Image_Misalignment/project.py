@@ -24,9 +24,9 @@ for index, row in point_cloud.iterrows():
 
     x, y, z = lla2ecef(row.lat, row.lon, row.alt)
     e, n, u = ecef2enu(x, y, z, camera_config.lat.values[0], camera_config.lon.values[0], camera_config.alt.values[0])
-    x, y, z = enu2cam(e, n, u, camera_config.qs.values[0], camera_config.qx.values[0], camera_config.qy.values[0], camera_config.qz.values[0])
+    x, y, z = enu2cam(e, n, u, -camera_config.qs.values[0], camera_config.qx.values[0], camera_config.qy.values[0], camera_config.qz.values[0])
 
-    a = cam2image(x, y, z, 512)
+    a = cam2image(x, y, z, 1024)
     if a == None:
         continue
     else:
@@ -34,15 +34,16 @@ for index, row in point_cloud.iterrows():
 
 
 
-img = np.zeros((512, 512))
+img = np.zeros((2048, 2048))
 for point in points:
     img[point[0], point[1]] = point[2]
 
 
-plt.imshow(img)
-plt.show()
+# plt.imshow(img)
+# plt.show()
 cv2.imshow("a",img)
 cv2.waitKey(0)
+cv2.imwrite("front.jpg", img)
 
 
 

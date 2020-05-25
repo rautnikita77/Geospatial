@@ -1,13 +1,13 @@
 import numpy as np
-from math import cos, sin, radians
+from math import cos, sin, radians, sqrt, pi
 import pymap3d as pm
 
 
 def lla2ecef(lat, lon, alt):
-    a = 6378137
-    b = 6356752.31424518
+    a = 6378137.0
+    b = 6356752.314245
     f = (a - b)/a
-    e = (f * (2 - f))**(1/2)
+    e = sqrt(f*(2-f))
     lat = radians(lat)
     lon = radians(lon)
     N = a / (1 - ((e**2) * sin(lat)**2))**(1/2)
@@ -15,6 +15,8 @@ def lla2ecef(lat, lon, alt):
     y = (alt + N) * cos(lat) * sin(lon)
     z = (alt + N * (1 - e**2)) * sin(lat)
     return x, y, z
+
+
 
 
 def ecef2enu(x, y, z, lat0, lon0, alt0):
@@ -33,10 +35,9 @@ def enu2cam(e, n, u, qs, qx, qy, qz):
     #               [2*qx*qy + 2*qs*qz, qs**2 - qx**2 + qy**2 - qz**2, 2*qy*qz - 2*qs*qx],
     #               [2*qx*qz - 2*qs*qy, 2*qy*qz + 2*qs*qx, qs**2 - qx**2 - qy**2 + qz**2]])
 
-    # Rq = np.array([[1 - 2*(qy**2) - 2*(qz**2), 2*qx*qy - 2*qz*qs, 2*qx*qz + 2*qy*qs],
-    #               [2*qx*qy + 2*qz*qs, 1 - 2*(qx**2) - (2*qz**2), 2*qy*qz - 2*qs*qx],
-    #               [2*qx*qz - 2*qs*qy, 2*qy*qz + 2*qs*qx, 1 - 2*(qx**2) - 2*(qy**2)]])
-
+    Rq = np.array([[1 - 2*qy**2 - 2*qz**2, 2*qx*qy - 2*qz*qs, 2*qx*qz + 2*qy*qs],
+                  [2*qx*qy + 2*qz*qs, 1 - 2*qx**2 - 2*qz**2, 2*qy*qz - 2*qs*qx],
+                  [2*qx*qz - 2*qs*qy, 2*qy*qz + 2*qs*qx, 1 - 2*qx**2 - 2*qy**2]])
 
 
     [[x], [y], [z]] = Rq @ np.array([[n], [e], [-u]])
