@@ -26,19 +26,19 @@ for index, row in point_cloud.iterrows():
 
     if z > 0 and z > abs(x) and z > abs(y):
         front = cam2image(x, y, z, 2048)
-        points_front.append([int(front[0]), int(front[1]), int(row.intensity)])
+        points_front.append([int(front[0]), int(front[1]), int(255)])
 
     if z < 0 and -z > abs(x) and -z > abs(y):
         back = cam2image(x, -y, z, 2048)
-        points_back.append([int(back[0]), int(back[1]), int(row.intensity)])
+        points_back.append([int(back[0]), int(back[1]), int(255)])
 
     if x > 0 and x > abs(z) and x > abs(y):
         right = cam2image(-z, y, x, 2048)
-        points_right.append([int(right[0]), int(right[1]), int(row.intensity)])
+        points_right.append([int(right[0]), int(right[1]), int(255)])
 
     if x < 0 and -x > abs(z) and -x > abs(y):
         left = cam2image(z, y, -x, 2048)
-        points_left.append([int(left[0]), int(left[1]), int(row.intensity)])
+        points_left.append([int(left[0]), int(left[1]), int(255)])
 
 
 front = np.zeros((2048, 2048))
