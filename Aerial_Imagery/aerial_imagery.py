@@ -1,4 +1,3 @@
-import sys, io, os
 from urllib import request
 from PIL import Image
 import os
@@ -106,8 +105,6 @@ def main():
         X_min, X_max = min(X1, X2), max(X1, X2)
         Y_min, Y_max = min(Y1, Y2), max(Y1, Y2)
 
-        # Bounding box's two coordinates coincide at the same pixel, which is invalid for an aerial image.
-        # Raise error and directly return without retriving any valid image.
         if abs(X1 - X2) <= 1 or abs(Y1 - Y2) <= 1:
             break
 
