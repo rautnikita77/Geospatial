@@ -2,6 +2,7 @@ import numpy as np
 from math import cos, sin, radians, sqrt, pi
 import pymap3d as pm
 import math
+import cv2
 
 
 def lla2ecef(lat, lon, alt):
@@ -52,5 +53,33 @@ def cam2image(x, y, z, Rs):
     return xi, yi
 
 
+def dilate(img, size, iterations=1):
+    """
+    Apply binary dilation to image for given number of iterations
+    Args:
+        img (ndarray): input image
+        size (int): Filter size
+        iterations (int): Number of iterations
+
+    Returns:
+        Image after dilation
+    """
+    kernel = np.ones((size, size), np.uint8)
+    bg = cv2.dilate(img, kernel, iterations=iterations)
+    return bg
 
 
+def erode(img, size, iterations=1):
+    """
+    Apply erosion to image for given number of iterations
+    Args:
+        img (ndarray): input image
+        size (int): Filter size
+        iterations (int): Number of iterations
+
+    Returns:
+        Image after erosion
+    """
+    kernel = np.ones((size, size), np.uint8)
+    bg = cv2.erode(img, kernel, iterations=iterations)
+    return bg
