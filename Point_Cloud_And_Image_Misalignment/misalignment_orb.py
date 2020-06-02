@@ -41,11 +41,11 @@ def sample_image(img):
 if __name__ == "__main__":
 
 
-    front_pc = cv2.imread(os.path.join(root, 'projections', 'front.jpg'), 0)
+    front_pc = cv2.imread(os.path.join(root, 'projections', 'back.jpg'), 0)
     front_pc = dilate(front_pc, 3,5)
     ret, front_pc = cv2.threshold(front_pc, 50, 255, cv2.THRESH_BINARY)
-    front_img = cv2.imread(os.path.join(root, 'image', 'front.jpg'), 0)
-    ret, thresh1 = cv2.threshold(front_img, 200, 255, cv2.THRESH_BINARY)
+    front_img = cv2.imread(os.path.join(root, 'image', 'back.jpg'), 0)
+    ret, thresh1 = cv2.threshold(front_img, 210, 255, cv2.THRESH_BINARY)
     cv2.imwrite('data/a.jpg', thresh1)
     cv2.imwrite('data/c.jpg', front_pc)
 
