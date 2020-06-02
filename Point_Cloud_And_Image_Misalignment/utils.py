@@ -83,3 +83,36 @@ def erode(img, size, iterations=1):
     kernel = np.ones((size, size), np.uint8)
     bg = cv2.erode(img, kernel, iterations=iterations)
     return bg
+
+
+def median_blur(img, size, iterations=1):
+    """
+    Apply median blur to image for given number of iterations
+    Args:
+        img (ndarray): input image
+        size (int): Filter size
+        iterations (int): Number of iterations
+
+    Returns:
+        Image after median blur
+    """
+    for iterations in range(iterations):
+        img = cv2.medianBlur(img, size)
+    return img
+
+
+def zoom_out(img, size):
+    """
+    Zoom out given images without changing the size
+    Args:
+        img (ndarray): image to be zoomed out
+        size (tuple): size of desired zoomed out image
+
+    Returns:
+
+    """
+    new_img = np.zeros_like(img)
+    img = cv2.resize(img, size)
+    new_img[int(new_img.shape[0]/2) - int(img.shape[0]/2): int(new_img.shape[0]/2) + int(img.shape[0]/2),
+    int(new_img.shape[1]/2) - int(img.shape[1]/2): int(new_img.shape[1]/2) + int(img.shape[1]/2)] = img
+    return new_img

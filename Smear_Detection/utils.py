@@ -86,7 +86,7 @@ def median_blur(img, size, iterations=1):
     """
     for iterations in range(iterations):
         img = cv2.medianBlur(img, size)
-    return img
+    return img\
 
 
 def isolate_key_ponits(mask, keypoints):
@@ -274,5 +274,9 @@ def undo_rotate(img, angle):
         padding = int(((2 ** 0.5) * img.shape[0] - img.shape[0]) / 2)
 
 
-if __name__ == '__main__':
-    rotate_with_pading((np.arange(10000)).astype(np.uint8).reshape((100, 100)), 0)
+# if __name__ == '__main__':
+#     img = cv2.imread('/Users/anupamtripathi/PycharmProjects/Geospatial/Point_Cloud_And_Image_Misalignment/data/image/back.jpg')
+#     plt.imshow(img, cmap='gray')
+#     plt.show()
+#     plt.imshow(zoom(img, (950, 950)), cmap='gray')
+#     plt.show()
