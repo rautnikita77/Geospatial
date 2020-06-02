@@ -2,7 +2,7 @@ import cv2
 import os
 import numpy as np
 import random
-from Point_Cloud_And_Image_Misalignment.utils import dilate
+from Point_Cloud_And_Image_Misalignment.utils import dilate, zoom_out
 
 root = 'data'
 
@@ -43,9 +43,24 @@ if __name__ == "__main__":
 
     front_pc = cv2.imread(os.path.join(root, 'projections', 'front.jpg'), 0)
     front_pc = dilate(front_pc, 3,5)
+    ret, front_pc = cv2.threshold(front_pc, 50, 255, cv2.THRESH_BINARY)
     front_img = cv2.imread(os.path.join(root, 'image', 'front.jpg'), 0)
     ret, thresh1 = cv2.threshold(front_img, 200, 255, cv2.THRESH_BINARY)
     cv2.imwrite('data/a.jpg', thresh1)
+    cv2.imwrite('data/c.jpg', front_pc)
+
+    loss = np.sum((thresh1 - front_pc ** 2))
+    print(loss)
+
+    rows, cols = front_pc.shape
+    M = np.float32([[1, 0, 10], [0, 1, -10]])
+    front_pc = cv2.warpAffine(front_pc, M, (cols, rows))
+
+    front_pc = zoom_out(front_pc, (front_pc.shape[0] - 50, front_pc.shape[1] - 50))
+    cv2.imwrite('data/b.jpg', front_pc)
+
+    loss = np.sum((thresh1[25:-25, 25:-25] - front_pc[25:-25, 25:-25]) ** 2)
+    print(loss/((rows - 50) * (cols - 50)))
     # cv2.waitKey(0)
 
     # front_img = cv2.Canny(front_img.astype(np.uint8), 100, 600)
