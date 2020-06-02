@@ -35,7 +35,6 @@ def main():
             [x, y] = cam2image(x, y, z, 2048)
             points_front.append([int(x), int(y), int(row.intensity)])
 
-
         # Back Projection
         if z < 0 and -z > abs(x) and -z > abs(y):
             [x, y] = cam2image(x, -y, z, 2048)
@@ -51,10 +50,10 @@ def main():
             [x, y] = cam2image(z, y, -x, 2048)
             points_left.append([int(x), int(y), int(row.intensity)])
 
-        front = create_image(points_front)
-        back = create_image(points_back)
-        left = create_image(points_left)
-        right = create_image(points_right)
+    front = create_image(points_front)
+    back = create_image(points_back)
+    left = create_image(points_left)
+    right = create_image(points_right)
 
     cv2.imwrite(os.path.join(root, "projections/front.jpg"), front)
     cv2.imwrite(os.path.join(root, "projections/back.jpg"), back)
