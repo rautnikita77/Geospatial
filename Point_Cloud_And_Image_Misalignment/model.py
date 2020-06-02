@@ -71,7 +71,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(list(model.camera_config.values()), lr=1)
     f, b, l, r = model()
     loss = torch.sum(f)
-    loss.backward()
     print(model.camera_config)
+    loss.backward()
     optimizer.step()
     print(model.camera_config)
