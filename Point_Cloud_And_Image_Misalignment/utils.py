@@ -19,14 +19,11 @@ def lla2ecef(lat, lon, alt):
     return x, y, z
 
 
-
-
 def ecef2enu(x, y, z, lat0, lon0, alt0):
     x0, y0, z0 = lla2ecef(lat0, lon0, alt0)
     R = np.array([[-sin(radians(lon0)), cos(radians(lon0)), 0],
                   [-cos(radians(lon0)) * sin(radians(lat0)), -sin(radians(lat0)) * sin(radians(lon0)), cos(radians(lat0))],
                   [cos(radians(lat0)) * cos(radians(lon0)), cos(radians(lat0)) * sin(radians(lon0)), sin(radians(lat0))]])
-
 
     [[e], [n], [u]] = R @ np.array([[x - x0], [y - y0], [z - z0]])
     return e, n, u
@@ -40,7 +37,6 @@ def enu2cam(e, n, u, qs, qx, qy, qz):
     Rq = np.array([[1 - 2*qy**2 - 2*qz**2, 2*qx*qy - 2*qz*qs, 2*qx*qz + 2*qy*qs],
                   [2*qx*qy + 2*qz*qs, 1 - 2*qx**2 - 2*qz**2, 2*qy*qz - 2*qs*qx],
                   [2*qx*qz - 2*qs*qy, 2*qy*qz + 2*qs*qx, 1 - 2*qx**2 - 2*qy**2]])
-
 
     [[x], [y], [z]] = Rq @ np.array([[n], [e], [-u]])
     return x, y, z
