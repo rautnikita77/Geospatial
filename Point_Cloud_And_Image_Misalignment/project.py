@@ -11,6 +11,7 @@ def create_image(points):
     img = np.zeros((2048, 2048))
     for point in points:
         img[point[0], point[1]] = point[2]
+    print(img)
     return img
 
 
