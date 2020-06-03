@@ -44,9 +44,9 @@ def enu2cam(e, n, u, qs, qx, qy, qz):
 
 def cam2image(x, y, z, Rs):
 
-    xi = (y//z) * ((Rs - 1)//2) + ((Rs + 1)//2)
-    yi = (x//z) * ((Rs - 1)//2) + ((Rs + 1)//2)
-    return xi, yi
+    xi = (y/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
+    yi = (x/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
+    return xi.int(), yi.int()
 
 
 def dilate(img, size, iterations=1):
