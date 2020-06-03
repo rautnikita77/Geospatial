@@ -31,7 +31,7 @@ class Model(nn.Module):
 
     def forward(self):
         points_front, points_back, points_left, points_right = [], [], [], []
-        for index, row in tqdm(self.point_cloud.iterrows()):
+        for index, row in tqdm(self.point_cloud[:10].iterrows()):
             x, y, z = lla2ecef(row.lat, row.lon, row.alt)
             e, n, u = ecef2enu(x, y, z, self.camera_config['lat'], self.camera_config['lon'],
                                self.camera_config['alt'])
@@ -44,8 +44,8 @@ class Model(nn.Module):
             if z > 0 and z > abs(x) and z > abs(y):
                 [x, y] = cam2image(x, y, z, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
                 points_front.append([x, y, intensity])
 
 
@@ -54,8 +54,8 @@ class Model(nn.Module):
             if z < 0 and -z > abs(x) and -z > abs(y):
                 [x, y] = cam2image(x, -y, z, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
                 points_back.append([x, y, intensity])
 
 
@@ -63,16 +63,16 @@ class Model(nn.Module):
             if x > 0 and x > abs(z) and x > abs(y):
                 [x, y] = cam2image(-z, y, x, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
                 points_right.append([x, y, intensity])
 
             # Right Projection
             if x < 0 and -x > abs(z) and -x > abs(y):
                 [x, y] = cam2image(z, y, -x, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
                 points_left.append([x, y, intensity])
 
 
@@ -90,9 +90,11 @@ if __name__ == "__main__":
     model = Model(os.path.join(root, 'final_project_point_cloud.fuse'),
                   os.path.join(root, 'image', 'camera.config'))
     optimizer = torch.optim.Adam(list(model.camera_config.values()), lr=1)
-    f, b, l, r = model()
-    loss = torch.sum(f)
+    b = model()
+    loss = b
+    print("aaa",loss.size())
     # print(model.camera_config)
+
     loss.backward()
     optimizer.step()
     # print('done')
