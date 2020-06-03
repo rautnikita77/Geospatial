@@ -35,7 +35,6 @@ def train():
 
     imgs = torch.stack((front_img, back_img, left_img, right_img))
 
-
     rows, cols = front_img.shape
 
     loss = nn.MSELoss()
@@ -46,10 +45,8 @@ def train():
 
     for epoch in range(epochs):
 
-        # optimizer.zero_grad()
+        optimizer.zero_grad()
         front_proj, back_proj, left_proj, right_proj = model()
-        print(back_proj)
-
 
         front_proj_np = front_proj.clone().detach().cpu().numpy()
         back_proj_np = back_proj.clone().detach().cpu().numpy()
@@ -66,19 +63,17 @@ def train():
         left_proj.data = torch.from_numpy(left_proj_np)
         right_proj.data = torch.from_numpy(right_proj_np)
 
-
         projs = torch.stack((front_proj, back_proj, left_proj, right_proj))
 
         imgs = imgs.to(device)
         projs = projs.to(device)
-        # back_proj = back_proj.to(device)
-        # back_img = back_img.to(device)
 
         cost = loss(imgs, projs)
         cost.backward()
         optimizer.step()
 
         print('Epoch: {}    Train Loss =  {}'.format(epoch, cost))
+        print(model.camera_config)
 
 
 

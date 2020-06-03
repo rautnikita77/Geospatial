@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import os
 from tqdm import tqdm
+import numpy as np
 
 
 def create_image(points):
@@ -31,6 +32,7 @@ class Model(nn.Module):
 
     def forward(self):
         points_front, points_back, points_left, points_right = [], [], [], []
+        mask = np.random.choice([False, True], len(self.point_cloud), p=[0.99, 0.01])
         for index, row in tqdm(self.point_cloud.iterrows()):
             x, y, z = lla2ecef(row.lat, row.lon, row.alt)
             e, n, u = ecef2enu(x, y, z, self.camera_config['lat'], self.camera_config['lon'],
@@ -44,17 +46,17 @@ class Model(nn.Module):
             if z > 0 and z > abs(x) and z > abs(y):
                 [x, y] = cam2image(x, y, z, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
-                points_front.append([x.item(), y.item(), intensity])
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
+                points_front.append([int(x.item()), int(y.item()), intensity])
 
             # Back Projection
             if z < 0 and -z > abs(x) and -z > abs(y):
                 [x, y] = cam2image(x, -y, z, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
-                points_back.append([x.item(), y.item(), intensity])
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
+                points_back.append([int(x.item()), int(y.item()), intensity])
                 # print(points_back)
 
 
@@ -62,18 +64,15 @@ class Model(nn.Module):
             if x > 0 and x > abs(z) and x > abs(y):
                 [x, y] = cam2image(-z, y, x, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
-                points_right.append([x.item(), y.item(), intensity])
+                # x.data = torch.from_numpy(np.array(int(x.item())))
+                # y.data = torch.from_numpy(np.array(int(y.item())))
+                points_right.append([int(x.item()), int(y.item()), intensity])
 
             # Right Projection
             if x < 0 and -x > abs(z) and -x > abs(y):
                 [x, y] = cam2image(z, y, -x, 2048)
                 intensity = x - x + row.intensity
-                x.data = torch.from_numpy(np.array(int(x.item())))
-                y.data = torch.from_numpy(np.array(int(y.item())))
-
-                points_left.append([x.item(), y.item(), intensity])
+                points_left.append([int(x.item()), int(y.item()), intensity])
 
 
         front = create_image(points_front)
@@ -85,15 +84,15 @@ class Model(nn.Module):
 
 
 # if __name__ == "__main__":
-    # loss = nn.MSELoss()
-    # root = 'data'
-    # model = Model(os.path.join(root, 'final_project_point_cloud.fuse'),
-    #               os.path.join(root, 'image', 'camera.config'))
-    # optimizer = torch.optim.Adam(list(model.camera_config.values()), lr=1)
-    # front, back, left, right = model()
-    #
-    # cost = loss(back, back)
-    # cost.backward()
-    # optimizer.step()
-    # print('done')
-    # print(model.camera_config)
+#     loss = nn.MSELoss()
+#     root = 'data'
+#     model = Model(os.path.join(root, 'final_project_point_cloud.fuse'),
+#                   os.path.join(root, 'image', 'camera.config'))
+#     optimizer = torch.optim.Adam(list(model.camera_config.values()), lr=1)
+#     front, back, left, right = model()
+#
+#     cost = loss(back, back)
+#     cost.backward()
+#     optimizer.step()
+#     print('done')
+#     print(model.camera_config)
