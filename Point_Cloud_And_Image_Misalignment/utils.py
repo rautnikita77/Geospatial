@@ -46,7 +46,7 @@ def cam2image(x, y, z, Rs):
 
     xi = (y/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
     yi = (x/z) * ((Rs - 1)/2) + ((Rs + 1)/2)
-    return xi.int(), yi.int()
+    return xi, yi
 
 
 def dilate(img, size, iterations=1):

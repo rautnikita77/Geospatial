@@ -13,7 +13,7 @@ def create_image(points):
     for point in points:
         img[point[0], point[1]] = point[2]
 
-    print(img)
+    # print(img)
     return img
 
 
@@ -31,7 +31,7 @@ class Model(nn.Module):
 
     def forward(self):
         points_front, points_back, points_left, points_right = [], [], [], []
-        for index, row in tqdm(self.point_cloud[:10].iterrows()):
+        for index, row in tqdm(self.point_cloud.iterrows()):
             x, y, z = lla2ecef(row.lat, row.lon, row.alt)
             e, n, u = ecef2enu(x, y, z, self.camera_config['lat'], self.camera_config['lon'],
                                self.camera_config['alt'])
@@ -44,40 +44,39 @@ class Model(nn.Module):
             if z > 0 and z > abs(x) and z > abs(y):
                 [x, y] = cam2image(x, y, z, 2048)
                 intensity = x - x + row.intensity
-                # x.data = torch.from_numpy(np.array(int(x.item())))
-                # y.data = torch.from_numpy(np.array(int(y.item())))
-                points_front.append([x, y, intensity])
-
-
+                x.data = torch.from_numpy(np.array(int(x.item())))
+                y.data = torch.from_numpy(np.array(int(y.item())))
+                points_front.append([x.item(), y.item(), intensity])
 
             # Back Projection
             if z < 0 and -z > abs(x) and -z > abs(y):
                 [x, y] = cam2image(x, -y, z, 2048)
                 intensity = x - x + row.intensity
-                # x.data = torch.from_numpy(np.array(int(x.item())))
-                # y.data = torch.from_numpy(np.array(int(y.item())))
-                points_back.append([x, y, intensity])
+                x.data = torch.from_numpy(np.array(int(x.item())))
+                y.data = torch.from_numpy(np.array(int(y.item())))
+                points_back.append([x.item(), y.item(), intensity])
+                # print(points_back)
 
 
             # Left Projection
             if x > 0 and x > abs(z) and x > abs(y):
                 [x, y] = cam2image(-z, y, x, 2048)
                 intensity = x - x + row.intensity
-                # x.data = torch.from_numpy(np.array(int(x.item())))
-                # y.data = torch.from_numpy(np.array(int(y.item())))
-                points_right.append([x, y, intensity])
+                x.data = torch.from_numpy(np.array(int(x.item())))
+                y.data = torch.from_numpy(np.array(int(y.item())))
+                points_right.append([x.item(), y.item(), intensity])
 
             # Right Projection
             if x < 0 and -x > abs(z) and -x > abs(y):
                 [x, y] = cam2image(z, y, -x, 2048)
                 intensity = x - x + row.intensity
-                # x.data = torch.from_numpy(np.array(int(x.item())))
-                # y.data = torch.from_numpy(np.array(int(y.item())))
-                points_left.append([x, y, intensity])
+                x.data = torch.from_numpy(np.array(int(x.item())))
+                y.data = torch.from_numpy(np.array(int(y.item())))
+
+                points_left.append([x.item(), y.item(), intensity])
 
 
         front = create_image(points_front)
-        print('f')
         back = create_image(points_back)
         left = create_image(points_left)
         right = create_image(points_right)
@@ -85,17 +84,16 @@ class Model(nn.Module):
         return front, back, left, right
 
 
-if __name__ == "__main__":
-    root = 'data'
-    model = Model(os.path.join(root, 'final_project_point_cloud.fuse'),
-                  os.path.join(root, 'image', 'camera.config'))
-    optimizer = torch.optim.Adam(list(model.camera_config.values()), lr=1)
-    b = model()
-    loss = b
-    print("aaa",loss.size())
-    # print(model.camera_config)
-
-    loss.backward()
-    optimizer.step()
+# if __name__ == "__main__":
+    # loss = nn.MSELoss()
+    # root = 'data'
+    # model = Model(os.path.join(root, 'final_project_point_cloud.fuse'),
+    #               os.path.join(root, 'image', 'camera.config'))
+    # optimizer = torch.optim.Adam(list(model.camera_config.values()), lr=1)
+    # front, back, left, right = model()
+    #
+    # cost = loss(back, back)
+    # cost.backward()
+    # optimizer.step()
     # print('done')
     # print(model.camera_config)
