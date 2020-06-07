@@ -18,7 +18,7 @@ def train():
     camera_config = os.path.join(root, 'image', 'camera.config')
 
 
-    front_img = cv2.imread(os.path.join(root, 'image', 'back.jpg'), 0)
+    front_img = cv2.imread(os.path.join(root, 'image', 'front.jpg'), 0)
     back_img = cv2.imread(os.path.join(root, 'image', 'back.jpg'), 0)
     left_img = cv2.imread(os.path.join(root, 'image', 'left.jpg'), 0)
     right_img = cv2.imread(os.path.join(root, 'image', 'right.jpg'), 0)
@@ -62,6 +62,7 @@ def train():
         back_proj.data = torch.from_numpy(back_proj_np)
         left_proj.data = torch.from_numpy(left_proj_np)
         right_proj.data = torch.from_numpy(right_proj_np)
+
 
         projs = torch.stack((front_proj, back_proj, left_proj, right_proj))
 

@@ -3,6 +3,10 @@ from math import cos, sin, radians, sqrt, pi
 import pymap3d as pm
 import math
 import cv2
+import torch
+from torchvision import transforms
+from torchvision.transforms import Normalize, Resize, ToTensor
+import torch.nn.functional as F
 
 
 def lla2ecef(lat, lon, alt):
@@ -111,4 +115,23 @@ def zoom_out(img, size):
     img = cv2.resize(img, size)
     new_img[int(new_img.shape[0]/2) - int(img.shape[0]/2): int(new_img.shape[0]/2) + int(img.shape[0]/2),
     int(new_img.shape[1]/2) - int(img.shape[1]/2): int(new_img.shape[1]/2) + int(img.shape[1]/2)] = img
+    return new_img
+
+def zoom_out_torch(img, size):
+    """
+    Zoom out given images without changing the size
+    Args:
+        img (ndarray): image to be zoomed out
+        size (tuple): size of desired zoomed out image
+
+    Returns:
+
+    """
+    new_img = torch.zeros_like(img)
+    (h, w) = new_img.shape
+
+    img = F.interpolate(img, size=size)
+    print(img.size())
+    new_img[(h // 2) - (h // 2): (h // 2) + (h // 2), w // 2 - w // 2: w // 2 + w // 2] = img
+    print(new_img.size())
     return new_img
